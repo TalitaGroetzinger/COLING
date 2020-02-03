@@ -1,5 +1,7 @@
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, classification_report
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from wikihowtools.add_linguistic_info import read_json, get_source_revision_pair
 
 
@@ -26,6 +28,16 @@ def get_scores(Ytrue, Ypredicted):
     accuracy = accuracy_score(Ytrue, Ypredicted)
     print("The accuracy is {0}".format(accuracy))
     print(report)
+
+
+def train_classifier(X, Y, use_words=True):
+    if use_words:
+        vec = TfidfVectorizer()
+    else:
+        vec = TfidfVectorizer(analyzer='char')
+    classifier = Pipeline([('vec', vec), ('clf', MultinomialNB())])
+    model = classifier.fit(X, Y)
+    return model
 
 
 def test_length_documents_labels(labels, docs):
