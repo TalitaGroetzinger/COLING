@@ -40,6 +40,18 @@ def train_classifier(X, Y, use_words=True):
     return model
 
 
+def evaluate_classifier(Xtest, Ytest, classifier, use_normal_setup=True):
+    """
+      Input: Xtest: the documents that we need to predict, Ytest: the true labels for the test set. 
+    """
+    if use_normal_setup:
+        Ypredict = classifier.predict(Xtest)
+        get_scores(Ypredict, Ytest)
+    else:
+        pass
+    return Ypredict
+
+
 def test_length_documents_labels(labels, docs):
     try:
         assert len(labels) == len(docs)
@@ -58,13 +70,6 @@ def main():
     X, Y = get_data(collection[0:20])
     print(X[0])
     print(Y[0])
-
-    #X = ""
-    #Y = ""
-    #classifier = MultinomialNB()
-    #model = classifier.fit(X, Y)
-    # use predict_proba here
-    # -----------------------
 
 
 if __name__ == '__main__':
