@@ -15,7 +15,7 @@ def get_corrections_edit_distance(potential_corrections, edit_distance_value=2):
                     wikihow_instance['Source_tagged'][i][0], wikihow_instance['Target_Tagged'][i][0])
                 if distance > edit_distance_value:
                     diff_words = [wikihow_instance['Source_tagged'][i],
-                                  wikihow_instance['Target_Tagged'][i], distance]
+                                  wikihow_instance['Target_Tagged'][i]]
                     diff_words_per_instance.append(diff_words)
                     wikihow_instance['differences'] = diff_words_per_instance
         del wikihow_instance['Revisions']
