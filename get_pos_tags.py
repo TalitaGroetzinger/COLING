@@ -41,13 +41,14 @@ def count_rev_length(corrections):
     rev_lengths = [wikihow_instance["Revision_Length"]
                    for wikihow_instance in corrections if wikihow_instance['Revision_Length'] > 1]
     for c in rev_lengths:
-        counter_dict[c] += 1
-    print(dict(counter_dict)))
+        counter_dict["Revision Length " + str(c)] += 1
+    print(dict(counter_dict))
+
 
 
 def main():
-    corrections=pickle.load(open("./data/real_corrections.pickle", "rb"))
-    noun_corrections=get_difference_by_tags(corrections)
+    corrections = pickle.load(open("./data/real_corrections.pickle", "rb"))
+    noun_corrections = get_difference_by_tags(corrections)
     count_rev_length(noun_corrections)
 
     # with open('./data/real_corrections_nouns.pickle', 'wb') as pickle_out:
