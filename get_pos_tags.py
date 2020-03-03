@@ -24,7 +24,7 @@ def get_freq_dist(filtered_corrections):
     nnp_counts = 0
     for wikihow_instance in filtered_corrections:
         counts = wikihow_instance["Tags_Count"]
-        for key, value in counts.items():
+        for key, _ in counts.items():
             if key == 'NN':
                 nn_counts += counts[key]
             if key == 'NNS':
@@ -36,16 +36,19 @@ def get_freq_dist(filtered_corrections):
     print(d)
 
 
-def main():
-    corrections = pickle.load(open("./data/real_corrections.pickle", "rb"))
-    noun_corrections = get_difference_by_tags(corrections)
-    counter = 0
-    for elem in noun_corrections:
-        if elem['Revision_Length'] > 1:
-            counter += 1
+def count_rev_length(corrections):
+    counter_dict = Counter()
+    rev_lengths = [wikihow_instance["Revision_Length"]
+                   for wikihow_instance in corrections if wikihow_instance['Revision_Length'] > 1]
+    for c in rev_lengths:
+        counter_dict[c] += 1
+    print(dict(counter_dict)))
 
-    print(counter)
-    get_freq_dist(noun_corrections)
+
+def main():
+    corrections=pickle.load(open("./data/real_corrections.pickle", "rb"))
+    noun_corrections=get_difference_by_tags(corrections)
+    count_rev_length(noun_corrections)
 
     # with open('./data/real_corrections_nouns.pickle', 'wb') as pickle_out:
     #    pickle.dump(noun_corrections, pickle_out)
