@@ -1,4 +1,5 @@
 from wikihowtools.add_linguistic_info import read_json, compute_char_distance
+import pickle
 
 
 def get_corrections_edit_distance(potential_corrections, edit_distance_value=2):
@@ -17,11 +18,12 @@ def get_corrections_edit_distance(potential_corrections, edit_distance_value=2):
                                   wikihow_instance['Target_Tagged'][i], distance]
                     diff_words_per_instance.append(diff_words)
                     wikihow_instance['differences'] = diff_words_per_instance
-        del wikihow_instance['revisions']
+        del wikihow_instance['Revisions']
         del wikihow_instance['Source_Tokenized']
         del wikihow_instance['Target_Tokenized']
         del wikihow_instance['Correction']
         del wikihow_instance['Key']
+        del wikihow_instance['Base_Sentence']
         if "differences" in wikihow_instance.keys():
             real_corrections.append(wikihow_instance)
     return real_corrections
@@ -36,6 +38,9 @@ def main():
     real_corrections = get_corrections_edit_distance(corrections)
     assert len(real_corrections) == 124685
     print(real_corrections[0].keys())
+    print(real_corrections[0])
+    with open('./data/real_corrections.pickle', 'wb') as pickle_out:
+        pickle.dump(real_corrections, pickle_out)
 
 
 main()
