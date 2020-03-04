@@ -25,8 +25,8 @@ def filter_df(df, edit_distance_value=2):
     collection = []
     for index, row in df.iterrows():
         differences = []
-        source_tagged = df['Source_Line_Tagged']
-        target_tagged = df['Target_Line_Tagged']
+        source_tagged = row['Source_Line_Tagged']
+        target_tagged = row['Target_Line_Tagged']
         if len(source_tagged) == len(target_tagged):
             for source, target in zip(source_tagged, target_tagged):
                 if source[0] != target[0]:
@@ -34,12 +34,12 @@ def filter_df(df, edit_distance_value=2):
                         source[0], target[0])
                     if distance > edit_distance_value:
                         differences.append([source, target])
-            if differences != []:
-                d = {"Filename": df['Article_Name'], "Source_Line": df['Source_Line'], "Target_Line": df["Target_Line"], "Differences": differences,
-                     "Source_Line_Tagged": source_tagged, "Target_Line_Tagged": target_tagged
+        if differences != []:
+            d = {"Filename": row['Article_Name'], "Source_Line": row['Source_Line'], "Target_Line": row["Target_Line"], "Differences": differences,
+                 "Source_Line_Tagged": source_tagged, "Target_Line_Tagged": target_tagged
 
-                     }
-                collection.append(d)
+                 }
+            collection.append(d)
     return collection
 
 
@@ -48,9 +48,9 @@ def main():
     df = pd.read_pickle(path_to_df)
     tqdm.pandas()
     df['Source_Line_Tagged'] = df['Source_Line'].progress_apply(tag_data)
-    #df['Target_Line_Tagged'] = df['Target_Line'].progress_apply(tag_data)
+    df['Target_Line_Tagged'] = df['Target_Line'].progress_apply(tag_data)
     df.to_pickle(
-        'wikihow_instructional_text_ordered_no_cycle_v6_tagged_source.pickle')
+        'wikihow_instructional_text_ordered_no_cycle_v6_tagged_source_target.pickle')
 
 
 main()

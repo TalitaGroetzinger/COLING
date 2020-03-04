@@ -63,43 +63,6 @@ def tag_sent(wikihow_instance):
     return wikihow_instance
 
 
-def add_differences(wikihow_instance):
-    tagged_all = wikihow_instance["All_tagged"]
-    collection = []
-    for i in range(len(tagged_all)-1):
-        current = tagged_all[i]
-        next_item = tagged_all[i+1]
-        tags_current = [tag[1] for tag in current]
-        tags_next = [tag[1] for tag in next_item]
-        if tags_current == tags_next:
-            d = {"base": current, "target": next_item,
-                 "differences": []}
-            for current_pair, next_pair in zip(current, next_item):
-                if current_pair[0] != next_pair[0]:
-                    distance = compute_char_distance(
-                        current_pair[0], next_pair[0])
-                    if distance > 2:
-                        d['differences'].append([current_pair, next_pair])
-            collection.append(d)
-            wikihow_instance["All_diffs_tagged"] = collection
-        else:
-            wikihow_instance["All_diffs_tagged"] = False
-    return wikihow_instance
-
-
-def tag_intermediate_revisions(corrections):
-    deep_wikihow_cases = [tag_sent(wikihow_instance)
-                          for wikihow_instance in corrections if wikihow_instance['Revision_Length'] > 1]
-    assert len(deep_wikihow_cases) == 4797
-    deep_wikihow_cases_v2 = [add_differences(
-        wikihow_instance) for wikihow_instance in deep_wikihow_cases]
-    for elem in deep_wikihow_cases_v2:
-        if elem['All_diffs_tagged']: 
-          pprint(elem["All_Versions"])
-          pprint(elem["All_diffs_tagged"])
-          print("======================")
-
-
 def main():
     corrections = pickle.load(open("./data/real_corrections.pickle", "rb"))
     noun_corrections = get_difference_by_tags(corrections)
