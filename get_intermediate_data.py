@@ -44,13 +44,12 @@ def filter_df(df, edit_distance_value=2):
 
 
 def main():
-    path_to_df = "/Users/talitaanthonio/Documents/PhD/year1/wiki-how-scripts/data/wikihow_instructional_text_ordered_no_cycle_v6.pickle"
-    df = pd.read_pickle(path_to_df)
+    df = pd.read_pickle(
+        './data/wikihow_instructional_text_ordered_no_cycle_v6_tagged_source_target.pickle')
     tqdm.pandas()
     df['Source_Line_Tagged'] = df['Source_Line'].progress_apply(tag_data)
-    df['Target_Line_Tagged'] = df['Target_Line'].progress_apply(tag_data)
     df.to_pickle(
-        'wikihow_instructional_text_ordered_no_cycle_v6_tagged_source_target.pickle')
+        'wikihow_instructional_text_ordered_no_cycle_v6_tagged_source_target_new.pickle')
 
 
 main()
