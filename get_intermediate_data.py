@@ -43,27 +43,15 @@ def filter_df(df, edit_distance_value=2):
     return collection
 
 
-def make_dict_from_df(df):
-    collection = []
-    for row, index in df.itterrows():
-        d = {}
-        d["Filename"] = row['Article_name']
-        d["Target_Tagged"] = row['Target_Line_Tagged']
-        d["Source_Tagged"] = row['Source_Line_Tagged']
-        collection.append(d)
-    return collection
-
-
 def main():
     df = pd.read_pickle(
-        './data/wikihow_instructional_text_ordered_no_cycle_v6_tagged_source_target.pickle')
+        'wikihow_instructional_text_ordered_no_cycle_v6_tagged_source_new.pickle')
+    print(df.columns)
     tqdm.pandas()
     df['Source_Line_Tagged'] = df['Source_Line'].progress_apply(tag_data)
-    df.drop(['Target_Line', 'Line_No_Src', 'Section_Tgt', 'Line_No_Tgt',
-             'Revision_Tag', 'BLEU_Score', 'Section_Src'], axis=1)
-
+    df.drop(['Source_Line'], axis=1)
     df.to_pickle(
-        'wikihow_instructional_text_ordered_no_cycle_v6_tagged_source_new.pickle')
+        'wikihow_instructional_text_ordered_no_cycle_v6_tagged_source_FINAL.pickle')
 
 
 main()
