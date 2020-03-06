@@ -20,7 +20,7 @@ def main():
     matches = 0
     match_per_sent_total = 0
     entailment_types = Counter()
-    for elem in content:
+    for counter, elem in enumerate(content, 1):
         matches_in_pair = 0
         for pair in elem['Differences']:
             total += 1
@@ -30,10 +30,14 @@ def main():
                 source[0].lower(), target[0].lower())
             try:
                 print(pdb[key_to_look_for])
-                print('\n')
                 matches += 1
                 matches_in_pair += 1
                 entailment_types[pdb[key_to_look_for]['ENTAILMENT']] += 1
+                with open('results.txt', 'a') as outfile:
+                    line_to_write = "{0}\t{1}\t{2}\n".format(
+                        counter, key_to_look_for, pdb[key_to_look_for]['ENTAILMENT'])
+                    outfile.write(line_to_write)
+
             except KeyError:
                 continue
 
