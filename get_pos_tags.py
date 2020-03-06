@@ -4,22 +4,7 @@ from nltk.tokenize import word_tokenize
 import nltk
 from wikihowtools.add_linguistic_info import read_json, compute_char_distance
 from pprint import pprint
-
-
-def get_difference_by_tags(corrections, list_of_tags=["NN", "NNS", "NNP"]):
-    filtered = []
-    for wikihow_instance in corrections:
-        differences = wikihow_instance['differences']
-        list_of_changed_tags = [difference[0][1] for difference in differences]
-        assert len(list_of_changed_tags) == len(differences)
-        tags_counter = Counter()
-        for tag in list_of_changed_tags:
-            if tag in list_of_tags:
-                tags_counter[tag] += 1
-        if tags_counter != {}:
-            wikihow_instance["Tags_Count"] = dict(tags_counter)
-            filtered.append(wikihow_instance)
-    return filtered
+import json
 
 
 def get_freq_dist(filtered_corrections):
@@ -49,27 +34,31 @@ def count_rev_length(corrections):
     print(dict(counter_dict))
 
 
-def tag_sent(wikihow_instance):
-    """
-      POS-tag all the cases in wikihow_instance["All_Versions"]
-    """
-    wikihow_instance_all_versions = wikihow_instance["All_Versions"]
-    tagged_sents = []
-    for sent in wikihow_instance_all_versions:
-        tokenized = word_tokenize(sent)
-        tagged = nltk.pos_tag(tokenized)
-        tagged_sents.append(tagged)
-    wikihow_instance["All_tagged"] = tagged_sents
-    return wikihow_instance
+def filter_insertions(wikihow_instance_collection):
+    collection = []
+    for wikihow_instance in wikihow_instance_collection:
+        filtered_differences = []
+        for elem in wikihow_instance['differences']:
+            source = elem[0]
+            tag_source = source[1]
+            if 'NN' == tag_source or 'NNS' == tag_source or 'NNP' == tag_source:
+                filtered_differences.append(elem)
+        wikihow_instance['Source_Line_Tagged'] = wikihow_instance['Source_tagged']
+        wikihow_instance['Target_Line_Tagged'] = wikihow_instance['Target_Tagged']
+        wikihow_instance['Differences'] = filtered_differences
+        del wikihow_instance['Source_tagged']
+        del wikihow_instance['Target_Tagged']
+        del wikihow_instance['differences']
+        if wikihow_instance['Differences'] != []:
+            collection.append(wikihow_instance)
+    return collection
 
 
 def main():
     corrections = pickle.load(open("./data/real_corrections.pickle", "rb"))
-    noun_corrections = get_difference_by_tags(corrections)
-    tag_intermediate_revisions(noun_corrections)
-
-    # with open('./data/real_corrections_nouns.pickle', 'wb') as pickle_out:
-    #    pickle.dump(noun_corrections, pickle_out)
+    noun_corrections = filter_insertions(corrections)
+    with open('noun_corrections.json', 'w') as json_file:
+        json.dump(noun_corrections, json_file)
 
 
 main()
