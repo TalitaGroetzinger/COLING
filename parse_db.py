@@ -2,7 +2,7 @@ import os
 
 
 def read_ppdb(path_to_db):
-    ppdb_collection = []
+    ppdb_collection = {}
     with open(path_to_db, 'r') as read_file:
         db = read_file.readlines()
     for entry in db:
@@ -10,15 +10,18 @@ def read_ppdb(path_to_db):
         lhs, phrase, paraphrase, features, alignment, entailment = entry.split(
             "|||")
 
-        entry_in_dict = {"LHS": lhs.rstrip().lstrip(), "PHRASE": phrase.rstrip().lstrip(),
-                         "PARAPHRASE": paraphrase.rstrip().lstrip(), "ENTAILMENT": entailment.rstrip().lstrip()}
-        ppdb_collection.append(entry_in_dict)
+        lookup_key = "{0}#{1}".format(phrase.strip(), paraphrase.strip())
+
+        ppdb_collection[lookup_key] = {"LHS": lhs.rstrip().lstrip(), "PHRASE": phrase.rstrip().lstrip(),
+                                       "PARAPHRASE": paraphrase.rstrip().lstrip(), "ENTAILMENT": entailment.rstrip().lstrip()}
     return ppdb_collection
 
 
 def main():
     path_to_db = './data/ppdb/ppdb-2.0-s-lexical'
-    read_ppdb(path_to_db)
+    coll = read_ppdb(path_to_db)
+    for key, value in coll.items():
+        print(coll, coll[key])
 
 
 if __name__ == '__main__':
