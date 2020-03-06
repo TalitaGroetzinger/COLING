@@ -1,6 +1,7 @@
 import json
 from parse_db import read_ppdb
 from progress.bar import Bar
+from collections import Counter
 
 
 def read_data(path_to_json_file):
@@ -18,6 +19,7 @@ def main():
     total = 0
     matches = 0
     match_per_sent_total = 0
+    entailment_types = Counter()
     for elem in content:
         matches_in_pair = 0
         for pair in elem['Differences']:
@@ -31,6 +33,7 @@ def main():
                 print('\n')
                 matches += 1
                 matches_in_pair += 1
+                entailment_types[pdb[key_to_look_for]['ENTAILMENT']] += 1
             except KeyError:
                 continue
 
@@ -46,6 +49,8 @@ def main():
     print("Total differences: ", total)
     print("Matches: ", matches)
     print("Perc: ", total_matches)
+    print("----------------------------------------")
+    print(entailment_types)
 
 
 main()
