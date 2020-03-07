@@ -1,3 +1,3 @@
 ## Overview 
-This repository is used to run classifiers. 
+This repository is used for the CoLing paper. 
 
