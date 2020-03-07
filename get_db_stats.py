@@ -10,6 +10,13 @@ def read_data(path_to_json_file):
     return content
 
 
+def write_results_to_file(counter, key_to_look_for, pdb):
+    with open('results.txt', 'a') as outfile:
+        line_to_write = "{0}\t{1}\t{2}\n".format(
+            counter, key_to_look_for, pdb[key_to_look_for]['ENTAILMENT'])
+        outfile.write(line_to_write)
+
+
 def main():
     content = read_data('./data/noun_corrections.json')
     print(len(content))
@@ -33,13 +40,12 @@ def main():
                 matches += 1
                 matches_in_pair += 1
                 entailment_types[pdb[key_to_look_for]['ENTAILMENT']] += 1
-                with open('results.txt', 'a') as outfile:
-                    line_to_write = "{0}\t{1}\t{2}\n".format(
-                        counter, key_to_look_for, pdb[key_to_look_for]['ENTAILMENT'])
-                    outfile.write(line_to_write)
 
             except KeyError:
-                continue
+                with open('missing_cases.txt', 'a') as out_file:
+                    line_to_write = "{0}\t{1}\n".format(
+                        counter, key_to_look_for)
+                    out_file.write(line_to_write)
 
         if matches_in_pair > 0:
             match_per_sent_total += 1
