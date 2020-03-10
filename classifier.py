@@ -1,76 +1,85 @@
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from wikihowtools.add_linguistic_info import read_json, get_source_revision_pair
+from sklearn.model_selection import train_test_split
+import json
 
 
-def get_data(collection):
-    # make x and y for first version
-    X_first_version = [elem['first_version'] for elem in collection]
-    Y_first_version = [0 for i in range(len(X_first_version))]
-    test_length_documents_labels(X_first_version, Y_first_version)
-
-    # make x and y for revised version
-    X_final_version = [elem['final_version'] for elem in collection]
-    Y_final_version = [1 for i in range(len(X_final_version))]
-    test_length_documents_labels(X_final_version, Y_final_version)
-
-    # merge the lists
-    X = X_first_version + X_final_version
-    Y = X_final_version + Y_final_version
-    test_length_documents_labels(X, Y)
+def get_data(list_of_wikihow_instances):
+    X = []
+    Y = []
+    for wikihow_instance in list_of_wikihow_instances:
+        source_untokenized = ' '.join(
+            [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
+        target_untokenized = ' '.join(
+            [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
+        X.append(source_untokenized)
+        Y.append(0)
+        X.append(target_untokenized)
+        Y.append(1)
     return X, Y
 
 
-def get_scores(Ytrue, Ypredicted):
-    report = classification_report(Ytrue, Ypredicted)
-    accuracy = accuracy_score(Ytrue, Ypredicted)
-    print("The accuracy is {0}".format(accuracy))
-    print(report)
-
-
-def train_classifier(X, Y, use_words=True):
-    if use_words:
-        vec = TfidfVectorizer()
-    else:
-        vec = TfidfVectorizer(analyzer='char')
-    classifier = Pipeline([('vec', vec), ('clf', MultinomialNB())])
-    model = classifier.fit(X, Y)
-    return model
-
-
-def evaluate_classifier(Xtest, Ytest, classifier, use_normal_setup=True):
+def split_data(X, Y):
     """
-      Input: Xtest: the documents that we need to predict, Ytest: the true labels for the test set. 
+        Split data into a train, dev and test set.
     """
-    if use_normal_setup:
-        Ypredict = classifier.predict(Xtest)
-        get_scores(Ypredict, Ytest)
-    else:
-        pass
-    return Ypredict
+    # get a train and test set (keep random state same for reproducability)
+    Xtrain, Xtest_first, Ytrain, Ytest_first = train_test_split(
+        X, Y, test_size=0.4, random_state=1)
+
+    # split test set further into test and development (keep random state same for reproducability)
+    Xtest, Xdev, Ytest, Ydev = train_test_split(
+        Xtest_first, Ytest_first, test_size=0.2, random_state=1)
+
+    assert len(Xtrain) == len(Ytrain)
+    assert len(Xdev) == len(Ydev)
+    assert len(Xtest) == len(Ytest)
+
+    print("Train Samples: ", len(Xtrain))
+    print("Dev Samples: ", len(Xdev))
+    print("Test Samples: ", len(Xtest))
+    return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
 
 
-def test_length_documents_labels(labels, docs):
-    try:
-        assert len(labels) == len(docs)
-    except AssertionError:
-        print("Length is unequal:")
-        print("Number of Documents:", len(docs))
-        print("Number of labels:", len(labels))
+def train_classifier(Xtrain, Ytrain, Xdev, Ydev):
+    """
+        Slightly modified from Irshad.
+    """
+    # vectorize data
+    print("Vectorize the data ...")
+    count_vec = CountVectorizer(max_features=None, lowercase=False, ngram_range=(
+        1, 2), stop_words=None, token_pattern='[^ ]+')
+    Xtrain_BOW = count_vec.fit_transform(Xtrain)
+    Xdev_BOW = count_vec.transform(Xdev)
+    normalize(Xtrain_BOW, copy=False)
+    normalize(Xdev_BOW, copy=False)
+    print("Train classifier ..")
+    classifier = MultinomialNB()
+    classifier.fit(Xtrain_BOW, Ytrain)
+    print("Finished training ..")
+    YpredictDev = classifier.predict_proba(Xdev_BOW)[:, 1]
+    positive = 0.0
+    negative = 0.0
+    for _, (s, t) in enumerate(zip(YpredictDev[::2], YpredictDev[1::2])):
+        if s < t:
+            positive += 1.0
+        else:
+            negative += 1.0
+        # print('\t'.join([dev_X[k], dev_X[k+1], str(round(s, 3)), str(round(t, 3)), str(s<t)]))
+    accuracy = (positive/(positive+negative))
+    print("Accuracy: {0}".format(accuracy))
 
 
 def main():
-    # load the json file
-    path = '../wiki-how-scripts/tsv-to-json/json-files/wikihow_v6_v3.json'
-    wikihow_json = read_json(path)
-    # return collection of dictionaries containing the first and final version of each article.
-    collection = get_source_revision_pair(wikihow_json)
-    X, Y = get_data(collection[0:20])
-    print(X[0])
-    print(Y[0])
+    # read data
+    with open('./data/noun_corrections_ppdb_tagged_v2.json', 'r') as json_file:
+        list_of_wikihow_instances = json.load(json_file)
+    X, Y = get_data(list_of_wikihow_instances)
+    # split dataset into train, dev, test
+    Xtrain, Ytrain, Xdev, Ydev, _, _ = split_data(X, Y)
+    train_classifier(Xtrain, Ytrain, Xdev, Ydev)
 
 
-if __name__ == '__main__':
-    main()
+main()
