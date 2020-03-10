@@ -7,6 +7,18 @@ import json
 import numpy as np
 
 
+def load_json_file(use_all_versions=True):
+    if use_all_versions:
+        print("Using all_corrections_wikihow_v6.json")
+        with open('./data/all_corrections_wikihow_v6.json', 'r') as json_file:
+            list_of_wikihow_instances = json.load(json_file)
+    else:
+        print("Using noun_corrections_ppdb_tagged_v2.json")
+        with open('./data/noun_corrections_ppdb_tagged_v2.json', 'r') as json_file:
+            list_of_wikihow_instances = json.load(json_file)
+    return list_of_wikihow_instances
+
+
 def get_data(list_of_wikihow_instances):
     X = []
     Y = []
@@ -37,10 +49,11 @@ def split_data(X, Y):
     assert len(Xtrain) == len(Ytrain)
     assert len(Xdev) == len(Ydev)
     assert len(Xtest) == len(Ytest)
-
+    print("------------------------------------")
     print("Train Samples: ", len(Xtrain))
     print("Dev Samples: ", len(Xdev))
     print("Test Samples: ", len(Xtest))
+    print("------------------------------------")
     return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
 
 
@@ -75,7 +88,9 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 1)):
 
 
 def get_most_informative_features(classifier, vec, top_features=10):
-    print("most informative features:")
+    print("------------------------------------")
+    print("---- Most informative features -----")
+    print("------------------------------------")
     neg_class_prob_sorted = classifier.feature_log_prob_[0, :].argsort()
     pos_class_prob_sorted = classifier.feature_log_prob_[1, :].argsort()
     print("Source: ", np.take(
@@ -86,8 +101,7 @@ def get_most_informative_features(classifier, vec, top_features=10):
 
 def main():
     # read data
-    with open('./data/noun_corrections_ppdb_tagged_v2.json', 'r') as json_file:
-        list_of_wikihow_instances = json.load(json_file)
+    list_of_wikihow_instances = load_json_file(True)
     X, Y = get_data(list_of_wikihow_instances)
     # split dataset into train, dev, test
     Xtrain, Ytrain, Xdev, Ydev, _, _ = split_data(X, Y)
