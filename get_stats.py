@@ -1,4 +1,4 @@
-# use this script to get the frequency distribution of nouns changing into other nouns
+# Use this script to get the frequency distribution of nouns changing into other nouns
 
 import json
 from collections import Counter
