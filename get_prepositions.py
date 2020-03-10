@@ -14,7 +14,6 @@ def get_pps_from_sent(sent, token_to_look_for='ADP'):
     parsed_sent = spacy_tagger(sent)
     pps = []
     for token in parsed_sent:
-        # Try this with other parts of speech for different subtrees.
         if token.pos_ == token_to_look_for:
             pp = ' '.join([tok.orth_ for tok in token.subtree])
             pps.append(pp)
