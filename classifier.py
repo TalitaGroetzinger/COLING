@@ -4,6 +4,7 @@ from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 import json
+import numpy as np
 
 
 def get_data(list_of_wikihow_instances):
@@ -43,14 +44,14 @@ def split_data(X, Y):
     return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
 
 
-def train_classifier(Xtrain, Ytrain, Xdev, Ydev):
+def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 1)):
     """
         Slightly modified from Irshad.
     """
     # vectorize data
     print("Vectorize the data ...")
-    count_vec = CountVectorizer(max_features=None, lowercase=False, ngram_range=(
-        1, 2), stop_words=None, token_pattern='[^ ]+')
+    count_vec = CountVectorizer(max_features=None, lowercase=False,
+                                ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
     Xtrain_BOW = count_vec.fit_transform(Xtrain)
     Xdev_BOW = count_vec.transform(Xdev)
     normalize(Xtrain_BOW, copy=False)
@@ -60,16 +61,27 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev):
     classifier.fit(Xtrain_BOW, Ytrain)
     print("Finished training ..")
     YpredictDev = classifier.predict_proba(Xdev_BOW)[:, 1]
-    positive = 0.0
-    negative = 0.0
-    for _, (s, t) in enumerate(zip(YpredictDev[::2], YpredictDev[1::2])):
-        if s < t:
-            positive += 1.0
+    positive = 0
+    negative = 0
+
+    for source_prediction, target_prediction in zip(YpredictDev[::2], YpredictDev[1::2]):
+        if source_prediction < target_prediction:
+            positive += 1
         else:
-            negative += 1.0
-        # print('\t'.join([dev_X[k], dev_X[k+1], str(round(s, 3)), str(round(t, 3)), str(s<t)]))
+            negative += 1
     accuracy = (positive/(positive+negative))
     print("Accuracy: {0}".format(accuracy))
+    get_most_informative_features(classifier, count_vec)
+
+
+def get_most_informative_features(classifier, vec, top_features=10):
+    print("most informative features:")
+    neg_class_prob_sorted = classifier.feature_log_prob_[0, :].argsort()
+    pos_class_prob_sorted = classifier.feature_log_prob_[1, :].argsort()
+    print("Source: ", np.take(
+        vec.get_feature_names(), neg_class_prob_sorted[:top_features]))
+    print("Target: ", np.take(
+        vec.get_feature_names(), pos_class_prob_sorted[:top_features]))
 
 
 def main():
