@@ -7,24 +7,6 @@ from pprint import pprint
 import json
 
 
-def get_freq_dist(filtered_corrections):
-    nn_counts = 0
-    nns_counts = 0
-    nnp_counts = 0
-    for wikihow_instance in filtered_corrections:
-        counts = wikihow_instance["Tags_Count"]
-        for key, _ in counts.items():
-            if key == 'NN':
-                nn_counts += counts[key]
-            if key == 'NNS':
-                nns_counts += counts[key]
-            if key == 'NNP':
-                nnp_counts += counts[key]
-    d = {"NN": nn_counts, "NNS": nns_counts, "NNP": nnp_counts,
-         "total": nn_counts + nns_counts + nnp_counts}
-    print(d)
-
-
 def count_rev_length(corrections):
     counter_dict = Counter()
     rev_lengths = [wikihow_instance["Revision_Length"]
