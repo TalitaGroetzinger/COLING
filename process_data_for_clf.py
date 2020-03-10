@@ -12,13 +12,14 @@ def add_entailment_relations(list_of_wikihow_instances, pdb):
     bar = Bar('Processing', max=len(list_of_wikihow_instances))
     for wikihow_instance in list_of_wikihow_instances:
         entailment_relations = {}
-        for pair in wikihow_instance['Differences']:
+        for counter, pair in enumerate(wikihow_instance['Differences'], 1):
             source = pair[0]
             target = pair[1]
             key_to_look_for = "{0}#{1}".format(
                 source[0].lower(), target[0].lower())
             try:
-                entailment_relations[key_to_look_for] = pdb[key_to_look_for]['ENTAILMENT']
+                entailment_relations[key_to_look_for +
+                                     str(counter)] = pdb[key_to_look_for]['ENTAILMENT']
             except KeyError:
                 continue
             if entailment_relations != {}:
@@ -36,7 +37,7 @@ def main():
     list_with_pdb_relations = add_entailment_relations(
         content, ppdb)
     print(len(list_with_pdb_relations))
-    with open('noun_corrections_ppdb_tagged.json', 'w') as json_file:
+    with open('noun_corrections_ppdb_tagged_v2.json', 'w') as json_file:
         json.dump(list_with_pdb_relations, json_file)
 
 
