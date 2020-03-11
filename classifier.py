@@ -1,5 +1,4 @@
-
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
@@ -7,6 +6,7 @@ from sklearn.pipeline import Pipeline
 import json
 import numpy as np
 import gensim
+import pickle
 
 
 def load_json_file(use_all_versions=False):
@@ -45,7 +45,7 @@ def split_data_by_article(list_of_wikihow_instances):
     train_set_files, test_set_files = train_test_split(
         list_of_filenames, shuffle=False, train_size=0.8, random_state=1)
     test_set_files, dev_set_files = train_test_split(
-        test_set_files, train_size=0.5, random_state=1)
+        test_set_files, train_size=0.5, random_state=1, shuffle=False)
 
     print("Articles in train set: ", len(train_set_files))
     print("Articles in dev set: ", len(dev_set_files))
@@ -95,7 +95,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
     """
     # vectorize data
     print("Vectorize the data ...")
-    count_vec = CountVectorizer(max_features=None, lowercase=False,
+    count_vec = TfidfVectorizer(max_features=None, lowercase=False,
                                 ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
     Xtrain_BOW = count_vec.fit_transform(Xtrain)
     Xdev_BOW = count_vec.transform(Xdev)
@@ -133,9 +133,25 @@ def get_most_informative_features(classifier, vec, top_features=10):
 def main():
     # read json file
     list_of_wikihow_instances = load_json_file(False)
+    """
     # get splits by article
     train_set_files, dev_set_files, test_set_files = split_data_by_article(
         list_of_wikihow_instances)
+
+    with open("test_set_files.pickle", "wb") as pickle_in:
+        pickle.dump(test_set_files, pickle_in)
+    with open("train_set_files.pickle", "wb") as pickle_in:
+        pickle.dump(train_set_files, pickle_in)
+    with open("dev_set_files.pickle", "wb") as pickle_in:
+        pickle.dump(dev_set_files, pickle_in)
+
+    # pickle.dump(test_set_files, ))
+    #pickle.dump(train_set_files, open("train_set_files.pickle", "wb"))
+    #pickle.dump(dev_set_files, open("dev_set_files.pickle", "wb"))
+    """
+    train_set_files = pickle.load(open("train_set_files.pickle", "rb"))
+    dev_set_files = pickle.load(open("dev_set_files.pickle", "rb"))
+    test_set_files = pickle.load(open("test_set_files.pickle", "rb"))
     # split further into X and Y
     Xtrain, Ytrain, Xdev, Ydev = get_XY(
         list_of_wikihow_instances, train_set_files, dev_set_files, test_set_files, use_test_set=False)
