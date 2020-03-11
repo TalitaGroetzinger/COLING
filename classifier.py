@@ -36,30 +36,60 @@ def get_data(list_of_wikihow_instances):
     return X, Y
 
 
-def split_data(X, Y):
+def split_data_by_article(list_of_wikihow_instances):
     """
-        Split data into a train, dev and test set.
+        Split data into a train, dev and test set based on filename. 
     """
-    # get a train and test set (keep random state same for reproducability)
-    Xtrain, Xtest_first, Ytrain, Ytest_first = train_test_split(
-        X, Y, test_size=0.4, random_state=1)
+    list_of_filenames = list(set([wikihow_instance['Filename']
+                                  for wikihow_instance in list_of_wikihow_instances]))
+    train_set_files, test_set_files = train_test_split(
+        list_of_filenames, shuffle=False, train_size=0.8, random_state=1)
+    test_set_files, dev_set_files = train_test_split(
+        test_set_files, train_size=0.5, random_state=1)
 
-    # split test set further into test and development (keep random state same for reproducability)
-    Xtest, Xdev, Ytest, Ydev = train_test_split(
-        Xtest_first, Ytest_first, test_size=0.2, random_state=1)
-
-    assert len(Xtrain) == len(Ytrain)
-    assert len(Xdev) == len(Ydev)
-    assert len(Xtest) == len(Ytest)
-    print("------------------------------------")
-    print("Train Samples: ", len(Xtrain))
-    print("Dev Samples: ", len(Xdev))
-    print("Test Samples: ", len(Xtest))
-    print("------------------------------------")
-    return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
+    print("Articles in train set: ", len(train_set_files))
+    print("Articles in dev set: ", len(dev_set_files))
+    print("Articles in test set: ", len(test_set_files))
+    return train_set_files, dev_set_files, test_set_files
 
 
-def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 1)):
+def get_XY(list_of_wikihow_instances, train_set_files, dev_set_files, test_set_files, use_test_set=False):
+    Xdev = []
+    Ydev = []
+    Xtrain = []
+    Ytrain = []
+    Xtest = []
+    Ytest = []
+    for wikihow_instance in list_of_wikihow_instances:
+        source_untokenized = ' '.join(
+            [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
+        target_untokenized = ' '.join(
+            [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
+        if wikihow_instance['Filename'] in train_set_files:
+            Xtrain.append(source_untokenized)
+            Ytrain.append(0)
+            Xtrain.append(target_untokenized)
+            Ytrain.append(1)
+        elif wikihow_instance['Filename'] in dev_set_files:
+            Xdev.append(source_untokenized)
+            Ydev.append(0)
+            Xdev.append(target_untokenized)
+            Ydev.append(1)
+        else:
+            Xtest.append(source_untokenized)
+            Ytest.append(0)
+            Xtest.append(target_untokenized)
+            Ytest.append(1)
+    print("Train cases:", len(Xtrain))
+    print("Dev cases: ", len(Xdev))
+    print("test cases: ", len(Xtest))
+    if use_test_set:
+        return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
+    else:
+        return Xtrain, Ytrain, Xdev, Ydev
+
+
+def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
     """
         Slightly modified from Irshad.
     """
@@ -101,11 +131,14 @@ def get_most_informative_features(classifier, vec, top_features=10):
 
 
 def main():
-    # read data
+    # read json file
     list_of_wikihow_instances = load_json_file(False)
-    X, Y = get_data(list_of_wikihow_instances)
-    # split dataset into train, dev, test
-    Xtrain, Ytrain, Xdev, Ydev, _, _ = split_data(X, Y)
+    # get splits by article
+    train_set_files, dev_set_files, test_set_files = split_data_by_article(
+        list_of_wikihow_instances)
+    # split further into X and Y
+    Xtrain, Ytrain, Xdev, Ydev = get_XY(
+        list_of_wikihow_instances, train_set_files, dev_set_files, test_set_files, use_test_set=False)
     train_classifier(Xtrain, Ytrain, Xdev, Ydev)
 
 
