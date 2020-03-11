@@ -37,9 +37,12 @@ def filter_insertions(wikihow_instance_collection):
 
 
 def main():
-    corrections = pickle.load(open("./data/real_corrections.pickle", "rb"))
+    #corrections = pickle.load(open("./data/real_corrections.pickle", "rb"))
+    with open('./data/wikihow_same_pos_same_length_NEW.json', 'r') as json_in:
+        corrections = json.load(json_in)
+
     noun_corrections = filter_insertions(corrections)
-    with open('noun_corrections.json', 'w') as json_file:
+    with open('noun_corrections_INC_ED.json', 'w') as json_file:
         json.dump(noun_corrections, json_file)
 
 

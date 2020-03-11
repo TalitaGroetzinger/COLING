@@ -32,12 +32,12 @@ def add_entailment_relations(list_of_wikihow_instances, pdb):
 
 
 def main():
-    content = read_json('./data/noun_corrections.json')
+    content = read_json('noun_corrections_INC_ED.json')
     ppdb = read_ppdb('./data/ppdb/ppdb-xxxl-lexical.txt')
     list_with_pdb_relations = add_entailment_relations(
         content, ppdb)
     print(len(list_with_pdb_relations))
-    with open('noun_corrections_ppdb_tagged_v2.json', 'w') as json_file:
+    with open('noun_corrections_ppdb_tagged_v3.json', 'w') as json_file:
         json.dump(list_with_pdb_relations, json_file)
 
 
