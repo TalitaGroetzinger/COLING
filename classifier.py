@@ -3,7 +3,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
-from features import MeanEmbeddingVectorizer
 from sklearn.pipeline import Pipeline
 import json
 import numpy as np
@@ -60,34 +59,23 @@ def split_data(X, Y):
     return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
 
 
-def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 1), use_counts=False):
+def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 1)):
     """
         Slightly modified from Irshad.
     """
     # vectorize data
     print("Vectorize the data ...")
-    if use_counts:
-        count_vec = CountVectorizer(max_features=None, lowercase=False,
-                                    ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
-        Xtrain_BOW = count_vec.fit_transform(Xtrain)
-        Xdev_BOW = count_vec.transform(Xdev)
-        normalize(Xtrain_BOW, copy=False)
-        normalize(Xdev_BOW, copy=False)
-        print("Train classifier ..")
-        classifier = MultinomialNB()
-        classifier.fit(Xtrain_BOW, Ytrain)
-        print("Finished training ..")
-        YpredictDev = classifier.predict_proba(Xdev_BOW)[:, 1]
-    else:
-        print("Use Word2vec")
-        model = gensim.models.Word2Vec(
-            Xtrain, size=300, window=5, min_count=1, workers=2)
-        w2v = {w: vec for w, vec in zip(model.wv.index2word, model.wv.syn0)}
-        vec = MeanEmbeddingVectorizer(w2v)
-
-        classifier = Pipeline([('vec', vec), ('cls', MultinomialNB())])
-        classifier.fit(Xtrain, Ytrain)
-
+    count_vec = CountVectorizer(max_features=None, lowercase=False,
+                                ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
+    Xtrain_BOW = count_vec.fit_transform(Xtrain)
+    Xdev_BOW = count_vec.transform(Xdev)
+    normalize(Xtrain_BOW, copy=False)
+    normalize(Xdev_BOW, copy=False)
+    print("Train classifier ..")
+    classifier = MultinomialNB()
+    classifier.fit(Xtrain_BOW, Ytrain)
+    print("Finished training ..")
+    YpredictDev = classifier.predict_proba(Xdev_BOW)[:, 1]
     positive = 0
     negative = 0
     for source_prediction, target_prediction in zip(YpredictDev[::2], YpredictDev[1::2]):
@@ -121,4 +109,5 @@ def main():
     train_classifier(Xtrain, Ytrain, Xdev, Ydev)
 
 
-main()
+if __name__ == '__main__':
+    main()
