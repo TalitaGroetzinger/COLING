@@ -38,7 +38,7 @@ def get_data(list_of_wikihow_instances):
 
 def split_data_by_article(list_of_wikihow_instances):
     """
-        Split data into a train, dev and test set based on filename. 
+        Split data into a train, dev and test set based on filename.
     """
     list_of_filenames = list(set([wikihow_instance['Filename']
                                   for wikihow_instance in list_of_wikihow_instances]))
@@ -133,8 +133,9 @@ def get_most_informative_features(classifier, vec, top_features=10):
 def main():
     # read json file
     list_of_wikihow_instances = load_json_file(False)
-    """
+
     # get splits by article
+    """
     train_set_files, dev_set_files, test_set_files = split_data_by_article(
         list_of_wikihow_instances)
 
@@ -145,10 +146,11 @@ def main():
     with open("dev_set_files.pickle", "wb") as pickle_in:
         pickle.dump(dev_set_files, pickle_in)
 
-    # pickle.dump(test_set_files, ))
-    #pickle.dump(train_set_files, open("train_set_files.pickle", "wb"))
-    #pickle.dump(dev_set_files, open("dev_set_files.pickle", "wb"))
+    pickle.dump(test_set_files, open("test_set_files.pickle", "wb"))
+    pickle.dump(train_set_files, open("train_set_files.pickle", "wb"))
+    pickle.dump(dev_set_files, open("dev_set_files.pickle", "wb"))
     """
+
     train_set_files = pickle.load(open("train_set_files.pickle", "rb"))
     dev_set_files = pickle.load(open("dev_set_files.pickle", "rb"))
     test_set_files = pickle.load(open("test_set_files.pickle", "rb"))
