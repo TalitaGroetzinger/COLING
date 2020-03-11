@@ -22,9 +22,9 @@ def add_entailment_relations(list_of_wikihow_instances, pdb):
                                      str(counter)] = pdb[key_to_look_for]['ENTAILMENT']
             except KeyError:
                 continue
-            if entailment_relations != {}:
-                wikihow_instance["Entailment_Rel"] = entailment_relations
-                collection.append(wikihow_instance)
+        if entailment_relations != {}:
+            wikihow_instance["Entailment_Rel"] = entailment_relations
+            collection.append(wikihow_instance)
         bar.next()
     bar.finish()
 
