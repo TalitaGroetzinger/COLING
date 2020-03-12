@@ -3,7 +3,6 @@
 
 from parse_db import read_ppdb
 from progress.bar import Bar
-from wikihowtools.add_linguistic_info import read_json
 import json
 
 
@@ -11,6 +10,7 @@ def add_entailment_relations(list_of_wikihow_instances, pdb):
     collection = []
     bar = Bar('Processing', max=len(list_of_wikihow_instances))
     for wikihow_instance in list_of_wikihow_instances:
+        PPDB_match = []
         entailment_relations = {}
         for counter, pair in enumerate(wikihow_instance['Differences'], 1):
             source = pair[0]
@@ -20,10 +20,12 @@ def add_entailment_relations(list_of_wikihow_instances, pdb):
             try:
                 entailment_relations[key_to_look_for +
                                      str(counter)] = pdb[key_to_look_for]['ENTAILMENT']
+                PPDB_match.append(pair)
             except KeyError:
                 continue
         if entailment_relations != {}:
             wikihow_instance["Entailment_Rel"] = entailment_relations
+            wikihow_instance["PPDB_Matches"] = PPDB_match
             collection.append(wikihow_instance)
         bar.next()
     bar.finish()
@@ -32,12 +34,15 @@ def add_entailment_relations(list_of_wikihow_instances, pdb):
 
 
 def main():
-    content = read_json('noun_corrections_INC_ED.json')
-    ppdb = read_ppdb('./data/ppdb/ppdb-xxxl-lexical.txt')
+    with open('../data/diff_noun_modifications.json', 'r') as json_in:
+        content = json.load(json_in)
+
+    ppdb = read_ppdb('../data/ppdb/ppdb-xxxl-lexical.txt')
     list_with_pdb_relations = add_entailment_relations(
         content, ppdb)
+
     print(len(list_with_pdb_relations))
-    with open('noun_corrections_ppdb_tagged_v3.json', 'w') as json_file:
+    with open('diff_noun_modifications_PPDB_tagged.json', 'w') as json_file:
         json.dump(list_with_pdb_relations, json_file)
 
 
