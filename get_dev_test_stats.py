@@ -43,6 +43,7 @@ def main():
 
     collection = check_filenames_in_json(
         list_of_wikihow_instances, list_of_dev_files, list_of_test_files)
+
     with open('./noun_corrections_ppdb_tagged_v3_with_split_info.json', 'w') as json_out:
         json.dump(collection, json_out)
 

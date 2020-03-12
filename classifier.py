@@ -9,18 +9,6 @@ import gensim
 import pickle
 
 
-def load_json_file(use_all_versions=False):
-    if use_all_versions:
-        print("Using all_corrections_wikihow_v6.json")
-        with open('./data/all_corrections_wikihow_v6.json', 'r') as json_file:
-            list_of_wikihow_instances = json.load(json_file)
-    else:
-        print("Using noun_corrections_ppdb_tagged_v2.json")
-        with open('./data/noun_corrections_ppdb_tagged_v2.json', 'r') as json_file:
-            list_of_wikihow_instances = json.load(json_file)
-    return list_of_wikihow_instances
-
-
 def get_data(list_of_wikihow_instances):
     X = []
     Y = []
@@ -53,7 +41,7 @@ def split_data_by_article(list_of_wikihow_instances):
     return train_set_files, dev_set_files, test_set_files
 
 
-def get_XY(list_of_wikihow_instances, train_set_files, dev_set_files, test_set_files, use_test_set=False):
+def get_XY(list_of_wikihow_instances, use_test_set=False):
     Xdev = []
     Ydev = []
     Xtrain = []
@@ -65,12 +53,13 @@ def get_XY(list_of_wikihow_instances, train_set_files, dev_set_files, test_set_f
             [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
         target_untokenized = ' '.join(
             [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
-        if wikihow_instance['Filename'] in train_set_files:
+
+        if wikihow_instance['Loc_in_splits'] == 'TRAIN':
             Xtrain.append(source_untokenized)
             Ytrain.append(0)
             Xtrain.append(target_untokenized)
             Ytrain.append(1)
-        elif wikihow_instance['Filename'] in dev_set_files:
+        elif wikihow_instance['Loc_in_splits'] == 'DEV':
             Xdev.append(source_untokenized)
             Ydev.append(0)
             Xdev.append(target_untokenized)
@@ -95,7 +84,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
     """
     # vectorize data
     print("Vectorize the data ...")
-    count_vec = TfidfVectorizer(max_features=None, lowercase=False,
+    count_vec = CountVectorizer(max_features=None, lowercase=False,
                                 ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
     Xtrain_BOW = count_vec.fit_transform(Xtrain)
     Xdev_BOW = count_vec.transform(Xdev)
@@ -132,31 +121,11 @@ def get_most_informative_features(classifier, vec, top_features=10):
 
 def main():
     # read json file
-    list_of_wikihow_instances = load_json_file(False)
+    with open('noun_corrections_ppdb_tagged_v3_with_split_info.json', 'r') as json_in:
+        list_of_wikihow_instances = json.load(json_in)
+    Xtrain, Ytrain, Xdev, Ydev = get_XY(list_of_wikihow_instances)
 
-    # get splits by article
-    """
-    train_set_files, dev_set_files, test_set_files = split_data_by_article(
-        list_of_wikihow_instances)
-
-    with open("test_set_files.pickle", "wb") as pickle_in:
-        pickle.dump(test_set_files, pickle_in)
-    with open("train_set_files.pickle", "wb") as pickle_in:
-        pickle.dump(train_set_files, pickle_in)
-    with open("dev_set_files.pickle", "wb") as pickle_in:
-        pickle.dump(dev_set_files, pickle_in)
-
-    pickle.dump(test_set_files, open("test_set_files.pickle", "wb"))
-    pickle.dump(train_set_files, open("train_set_files.pickle", "wb"))
-    pickle.dump(dev_set_files, open("dev_set_files.pickle", "wb"))
-    """
-
-    train_set_files = pickle.load(open("train_set_files.pickle", "rb"))
-    dev_set_files = pickle.load(open("dev_set_files.pickle", "rb"))
-    test_set_files = pickle.load(open("test_set_files.pickle", "rb"))
     # split further into X and Y
-    Xtrain, Ytrain, Xdev, Ydev = get_XY(
-        list_of_wikihow_instances, train_set_files, dev_set_files, test_set_files, use_test_set=False)
     train_classifier(Xtrain, Ytrain, Xdev, Ydev)
 
 

@@ -2,6 +2,7 @@
 
 import json
 from collections import Counter
+import nltk
 
 
 def count_tags(list_of_wikihow_instances):
@@ -18,11 +19,12 @@ def count_tags(list_of_wikihow_instances):
 
 
 def main():
-    with open('./noun_corrections_INC_ED.json', 'r') as json_file:
+    with open('./noun_corrections_ppdb_tagged_v3_with_split_info.json', 'r') as json_file:
         noun_corrections = json.load(json_file)
     res, total = count_tags(noun_corrections)
     print(res)
     print(total)
+    count_rels(noun_corrections)
 
 
 main()
