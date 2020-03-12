@@ -37,12 +37,14 @@ def main():
     list_of_test_files = get_list_of_filenames(
         './classification-data/test_files.txt')
 
-    with open('./noun_corrections_ppdb_tagged_v3.json', 'r') as json_out:
-        list_of_wikihow_instances = json.load(json_out)
+    with open('./noun_corrections_ppdb_tagged_v3.json', 'r') as json_in:
+        list_of_wikihow_instances = json.load(json_in)
     print(len(list_of_wikihow_instances))
 
     collection = check_filenames_in_json(
         list_of_wikihow_instances, list_of_dev_files, list_of_test_files)
+    with open('./noun_corrections_ppdb_tagged_v3_with_split_info.json', 'w') as json_out:
+        json.dump(collection, json_out)
 
 
 main()
