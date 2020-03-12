@@ -18,10 +18,11 @@ def write_results_to_file(counter, key_to_look_for, pdb):
 
 
 def main():
-    content = read_data('./noun_corrections_INC_ED.json')
+    # previously used content = read_data('./noun_corrections_INC_ED.json')
+    content = read_data('../data/diff_noun_modifications.json')
     print(len(content))
     print("read pdb")
-    pdb = read_ppdb('./data/ppdb/ppdb-xxxl-lexical.txt')
+    pdb = read_ppdb('../data/ppdb/ppdb-xxxl-lexical.txt')
     bar = Bar('Processing', max=len(content))
     total = 0
     matches = 0
