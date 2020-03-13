@@ -1,3 +1,5 @@
+# this script can be used to add the key ['Loc_in_splits'] to a collection of Wikihowinstances.
+
 
 from collections import Counter
 import json
