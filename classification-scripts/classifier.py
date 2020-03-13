@@ -173,12 +173,12 @@ def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
 
 def main():
     # read json file
-    list_of_wikihow_instances = load_json(False)
+    list_of_wikihow_instances = load_json()
     # get everything for different noun modifications
     print(list_of_wikihow_instances[0].keys())
 
     Xtrain, Ytrain, Xdev, Ydev = get_XY(
-        list_of_wikihow_instances, False, False)
+        list_of_wikihow_instances)
     positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
                                                       Xdev, Ydev)
 
