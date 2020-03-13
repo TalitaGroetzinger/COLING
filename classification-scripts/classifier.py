@@ -11,7 +11,7 @@ import pickle
 
 def load_json(different_noun_modifications=True):
     if different_noun_modifications:
-        path = './classification-data/noun_corrections_ppdb_tagged_v3_with_split_info.json'
+        path = './classification-data/diff_noun_modifications_PPDB_tagged_with_splits.json'
         print("Using file with DIFF-NOUN-MODIFICATIONS: ", path)
         with open(path, 'r') as json_in:
             list_of_wikihow_instances = json.load(json_in)
@@ -24,51 +24,29 @@ def load_json(different_noun_modifications=True):
     return list_of_wikihow_instances
 
 
-def get_data(list_of_wikihow_instances):
-    X = []
-    Y = []
-    for wikihow_instance in list_of_wikihow_instances:
-        source_untokenized = ' '.join(
-            [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
-        target_untokenized = ' '.join(
-            [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
-        X.append(source_untokenized)
-        Y.append(0)
-        X.append(target_untokenized)
-        Y.append(1)
-    return X, Y
-
-
-def split_data_by_article(list_of_wikihow_instances):
-    """
-        Split data into a train, dev and test set based on filename.
-    """
-    list_of_filenames = list(set([wikihow_instance['Filename']
-                                  for wikihow_instance in list_of_wikihow_instances]))
-    train_set_files, test_set_files = train_test_split(
-        list_of_filenames, shuffle=False, train_size=0.8, random_state=1)
-    test_set_files, dev_set_files = train_test_split(
-        test_set_files, train_size=0.5, random_state=1, shuffle=False)
-
-    print("Articles in train set: ", len(train_set_files))
-    print("Articles in dev set: ", len(dev_set_files))
-    print("Articles in test set: ", len(test_set_files))
-    return train_set_files, dev_set_files, test_set_files
-
-
-def get_XY(list_of_wikihow_instances, use_test_set=False):
+def get_XY(list_of_wikihow_instances, use_test_set=False, diff_noun_file=True):
     Xdev = []
     Ydev = []
     Xtrain = []
     Ytrain = []
     Xtest = []
     Ytest = []
+    if diff_noun_file:
+        print("USE DIFF NOUN FILE ...")
+    else:
+        print("USE SAME NOUN FILE .... ")
     for wikihow_instance in list_of_wikihow_instances:
-        source_untokenized = ' '.join(
-            [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
-        target_untokenized = ' '.join(
-            [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
-
+        # this  if-else is necessary because the two json files have different keys :(
+        if diff_noun_file:
+            source_untokenized = ' '.join(
+                [pair[0] for pair in wikihow_instance['Source_tagged']])
+            target_untokenized = ' '.join(
+                [pair[0] for pair in wikihow_instance['Target_Tagged']])
+        else:
+            source_untokenized = ' '.join(
+                [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
+            target_untokenized = ' '.join(
+                [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
         if wikihow_instance['Loc_in_splits'] == 'TRAIN':
             Xtrain.append(source_untokenized)
             Ytrain.append(0)
@@ -137,7 +115,19 @@ def get_most_informative_features(classifier, vec, top_features=10):
 def main():
     # read json file
     list_of_wikihow_instances = load_json()
-    Xtrain, Ytrain, Xdev, Ydev = get_XY(list_of_wikihow_instances)
+    # get everything for different noun modifications
+    XtrainDIFF, YtrainDIFF, XdevDIFF, YdevDIFF = get_XY(
+        list_of_wikihow_instances)
+
+    # get everything for same noun modifications
+    same_list_of_wikihow_instances = load_json(False)
+    XtrainSAME, YtrainSAME, XdevSAME, YdevSAME = get_XY(
+        same_list_of_wikihow_instances, False, False)
+
+    Xtrain = XtrainDIFF + XtrainSAME
+    Ytrain = YtrainDIFF + YtrainSAME
+    Xdev = XdevDIFF + XdevSAME
+    Ydev = YdevDIFF + YdevSAME
 
     # split further into X and Y
     train_classifier(Xtrain, Ytrain, Xdev, Ydev)

@@ -28,7 +28,7 @@ def check_filenames_in_json(json_file, list_of_dev_files, list_of_test_files):
             wikihow_instance['Loc_in_splits'] = 'TRAIN'
         collection.append(wikihow_instance)
         counter[wikihow_instance['Loc_in_splits']] += 1
-    del wikihow_instance['All_Versions']
+    #del wikihow_instance['All_Versions']
     print(counter)
     print(len(collection))
     return collection
@@ -40,15 +40,15 @@ def main():
     list_of_test_files = get_list_of_filenames(
         './classification-data/test_files.txt')
 
-    with open('../data/diff_noun_modifications_PPDB_tagged.json', 'r') as json_in:
+    with open('./classification-data/noun_corrections_ppdb_tagged_v3_with_split_info.json', 'r') as json_in:
         list_of_wikihow_instances = json.load(json_in)
     print(len(list_of_wikihow_instances))
 
     collection = check_filenames_in_json(
         list_of_wikihow_instances, list_of_dev_files, list_of_test_files)
 
-    with open('./diff_noun_modifications_PPDB_tagged.json', 'w') as json_out:
-        json.dump(collection, json_out)
+    # with open('./diff_noun_modifications_PPDB_tagged_with_split_info.json', 'w') as json_out:
+    #    json.dump(collection, json_out)
 
 
 main()
