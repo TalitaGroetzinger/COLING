@@ -3,6 +3,7 @@ from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
+from collections import Counter
 import json
 import numpy as np
 import gensim
@@ -11,13 +12,13 @@ import pickle
 
 def load_json(different_noun_modifications=True):
     if different_noun_modifications:
-        path = './classification-data/diff_noun_modifications_PPDB_tagged_with_splits.json'
+        path = './classification-data/DIFF-NOUN-MODIFICATIONS.json'
         print("Using file with DIFF-NOUN-MODIFICATIONS: ", path)
         with open(path, 'r') as json_in:
             list_of_wikihow_instances = json.load(json_in)
 
     else:
-        path = './classification-data/noun_corrections_ppdb_tagged_v3_with_split_info.json'
+        path = './classification-data/SAME-NOUN-MODIFICATIONS.json'
         print("Using file with SAME-NOUN-MODIFICATIONS: ", path)
         with open(path, 'r') as json_in:
             list_of_wikihow_instances = json.load(json_in)
@@ -90,14 +91,19 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
     YpredictDev = classifier.predict_proba(Xdev_BOW)[:, 1]
     positive = 0
     negative = 0
-    for source_prediction, target_prediction in zip(YpredictDev[::2], YpredictDev[1::2]):
+    list_of_good_predictions = []
+    list_of_bad_predictions = []
+    for i, (source_prediction, target_prediction) in enumerate(zip(YpredictDev[::2], YpredictDev[1::2])):
         if source_prediction < target_prediction:
             positive += 1
+            list_of_good_predictions.append(i)
         else:
             negative += 1
+            list_of_bad_predictions.append(i)
     accuracy = (positive/(positive+negative))
     print("Accuracy: {0}".format(accuracy))
     get_most_informative_features(classifier, count_vec)
+    return list_of_good_predictions, list_of_bad_predictions
 
 
 def get_most_informative_features(classifier, vec, top_features=10):
@@ -112,8 +118,7 @@ def get_most_informative_features(classifier, vec, top_features=10):
         vec.get_feature_names(), pos_class_prob_sorted[:top_features]))
 
 
-def main():
-    # read json file
+def run_all_noun_types():
     list_of_wikihow_instances = load_json()
     # get everything for different noun modifications
     XtrainDIFF, YtrainDIFF, XdevDIFF, YdevDIFF = get_XY(
@@ -131,6 +136,61 @@ def main():
 
     # split further into X and Y
     train_classifier(Xtrain, Ytrain, Xdev, Ydev)
+
+
+def get_specific_set_from_data(list_of_wikihow_instances, split='DEV'):
+    """
+        Parameter of split should be: TRAIN, DEV, TEST 
+    """
+    requested_set = [
+        wikihow_instance for wikihow_instance in list_of_wikihow_instances if wikihow_instance['Loc_in_splits'] == split]
+    return requested_set
+
+
+def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
+    """
+        set_to_inspect: list of all development/train/test wikihow instances
+        list_of_indexes: list with indexes of negative cases or list with indexes of positive cases, as returned by 
+        train_classifier()
+    """
+    freq_dist_entailment = Counter()
+    list_of_categories = []
+    for index in list_of_indexes:
+        correct_instance = set_to_inspect[index]
+        # print("{0}\t{1}".format(
+        #    correct_instance['Entailment_Rel'], correct_instance['PPDB_Matches']))
+        for key, _ in correct_instance['Entailment_Rel'].items():
+            list_of_categories.append(correct_instance['Entailment_Rel'][key])
+    for rel in list_of_categories:
+        freq_dist_entailment[rel] += 1
+    res = dict(freq_dist_entailment)
+    print(message)
+    for key, value in res.items():
+        print(key, '\t', value)
+    total = sum([value for key, value in res.items()])
+    print("TOTAL RELATIONS: ", total)
+
+
+def main():
+    # read json file
+    list_of_wikihow_instances = load_json(False)
+    # get everything for different noun modifications
+    print(list_of_wikihow_instances[0].keys())
+
+    Xtrain, Ytrain, Xdev, Ydev = get_XY(
+        list_of_wikihow_instances, False, False)
+    positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
+                                                      Xdev, Ydev)
+
+    # remember, predictions are made on the development set.
+
+    development_set = get_specific_set_from_data(list_of_wikihow_instances)
+    pos_message = "get positive cases"
+    get_error_analysis_by_cat(development_set, positive_cases, pos_message)
+    print("---------------------------------------------------------")
+    neg_message = "get negative cases"
+    get_error_analysis_by_cat(development_set, negative_cases, neg_message)
+    print(len(Ydev)/2)
 
 
 if __name__ == '__main__':
