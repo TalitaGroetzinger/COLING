@@ -9,6 +9,21 @@ import gensim
 import pickle
 
 
+def load_json(different_noun_modifications=True):
+    if different_noun_modifications:
+        path = './classification-data/noun_corrections_ppdb_tagged_v3_with_split_info.json'
+        print("Using file with DIFF-NOUN-MODIFICATIONS: ", path)
+        with open(path, 'r') as json_in:
+            list_of_wikihow_instances = json.load(json_in)
+
+    else:
+        path = './classification-data/noun_corrections_ppdb_tagged_v3_with_split_info.json'
+        print("Using file with SAME-NOUN-MODIFICATIONS: ", path)
+        with open(path, 'r') as json_in:
+            list_of_wikihow_instances = json.load(json_in)
+    return list_of_wikihow_instances
+
+
 def get_data(list_of_wikihow_instances):
     X = []
     Y = []
@@ -121,8 +136,7 @@ def get_most_informative_features(classifier, vec, top_features=10):
 
 def main():
     # read json file
-    with open('noun_corrections_ppdb_tagged_v3_with_split_info.json', 'r') as json_in:
-        list_of_wikihow_instances = json.load(json_in)
+    list_of_wikihow_instances = load_json()
     Xtrain, Ytrain, Xdev, Ydev = get_XY(list_of_wikihow_instances)
 
     # split further into X and Y
