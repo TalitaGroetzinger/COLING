@@ -1,5 +1,6 @@
 import json
 
+
 with open('../classification-scripts/classification-data/DIFF-NOUN-MODIFICATIONS.json', 'r') as json_in:
     diff_noun_modifications = json.load(json_in)
 
