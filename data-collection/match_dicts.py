@@ -58,7 +58,20 @@ def main():
             correct_dict[key]['Source_Line_Nr'] = source_line_nr
             data.append(correct_dict[key])
         except KeyError:
-            keys_not_found.append(key)
+            with open('../data/care_for_a_goat.json', 'r') as json_in:
+                care_for_a_goat = json.load(json_in)
+            for elem in care_for_a_goat:
+                if elem['key'] == key:
+                    target_line_nr = elem['Target_Line_Nr']
+                    source_line_nr = elem['Source_Line_Nr']
+
+                    # update the current dict
+                    correct_dict[key]['Target_Line_Nr'] = target_line_nr
+                    correct_dict[key]['Source_Line_Nr'] = source_line_nr
+                    data.append(correct_dict[key])
+
+    with open('../data/DIFF-NOUN-MODIFICATIONS-LINE-NR.json', 'w') as json_out:
+        json.dump(data, json_out)
 
 
 main()
