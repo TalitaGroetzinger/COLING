@@ -19,8 +19,7 @@ def get_list_of_files():
 def main():
     # make a dataframe of the complete wikihow dataset
     path_to_full = '../../../corpora/wikihow_instructional_text_ordered_no_cycle_v6.txt'
-    df = pd.read_csv(path_to_full,
-                     delimiter="\t", quoting=3)
+    df = pd.read_csv(path_to_full, delimiter="\t", quoting=3)
 
     # get only the rows with a specific filename
     with open('../data/diff_noun_modification_files.txt', 'r') as file_in:
