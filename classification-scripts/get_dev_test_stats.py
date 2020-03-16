@@ -5,6 +5,14 @@ from collections import Counter
 import json
 
 
+def json_to_txt(json_file):
+    collection = []
+    for wikihow_instance in json_file:
+        if wikihow_instance['Loc_in_splits'] == 'TRAIN':
+            collection.append(wikihow_instance['Filename'])
+    return collection
+
+
 def get_list_of_filenames(path_to_file):
     list_of_files = []
     with open(path_to_file, 'r') as file:
@@ -47,8 +55,15 @@ def main():
     collection = check_filenames_in_json(
         list_of_wikihow_instances, list_of_dev_files, list_of_test_files)
 
-    # with open('./diff_noun_modifications_PPDB_tagged_with_split_info.json', 'w') as json_out:
-    #    json.dump(collection, json_out)
+    # to get train files:
+    with open('../classification-scripts/classification-data/DIFF-NOUN-MODIFICATIONS.json') as json_in:
+        content = json.load(json_in)
+
+    collection = json_to_txt(content)
+    with open('train.txt', 'w') as file_out:
+        for filename in collection:
+            line_to_write = "{0}\n".format(filename)
+            file_out.write(line_to_write)
 
 
 main()
