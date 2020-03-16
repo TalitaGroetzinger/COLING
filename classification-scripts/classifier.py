@@ -12,7 +12,8 @@ import pickle
 
 def load_json(different_noun_modifications=True):
     if different_noun_modifications:
-        path = './classification-data/DIFF-NOUN-MODIFICATIONS.json'
+        #path = './classification-data/DIFF-NOUN-MODIFICATIONS.json'
+        path = '../data/DIFF-NOUN-MODIFICATIONS-LINE-NR.json'
         print("Using file with DIFF-NOUN-MODIFICATIONS: ", path)
         with open(path, 'r') as json_in:
             list_of_wikihow_instances = json.load(json_in)
