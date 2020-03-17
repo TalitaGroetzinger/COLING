@@ -5,27 +5,30 @@ import json
 
 
 def get_line_and_file(filename, line_nr, collection):
-    context = []
     # get current_line
     current_line = collection[filename][line_nr]
     # make a list of all line numbers
     sentence_nrs = [key for key, _ in collection[filename].items()]
     list_positions = [i for i in range(len(sentence_nrs))]
     # get the index of the line before and after
-    current_line_minus_1_index = sentence_nrs.index(line_nr)-1
-    current_line_plus_1_index = sentence_nrs.index(line_nr)+1
+    window_range = [1, 2, 3]
+    sents_before_current = []
+    sents_after_current = []
+    for window in window_range:
+        previous_line_index = sentence_nrs.index(line_nr)-window
+        next_line_index = sentence_nrs.index(line_nr)+window
+        if previous_line_index in list_positions:
+            previous_line_pos = sentence_nrs[previous_line_index]
+            previous_line = collection[filename][previous_line_pos]
+            sents_before_current.append(previous_line)
 
-    # check if the index is in the range
-    if current_line_minus_1_index in list_positions:
-        current_line_minus_1_pos = sentence_nrs[current_line_minus_1_index]
-        current_line_minus_1 = collection[filename][current_line_minus_1_pos]
-        context.append(current_line_minus_1)
-    context.append(current_line)
-    if current_line_plus_1_index in list_positions:
-        current_line_plus_1_pos = sentence_nrs[current_line_plus_1_index]
-        current_line_plus_1 = collection[filename][current_line_plus_1_pos]
-        context.append(current_line_plus_1)
-    return context
+        if next_line_index in list_positions:
+            next_line_pos = sentence_nrs[next_line_index]
+            next_line = collection[filename][next_line_pos]
+            sents_after_current.append(next_line)
+    sents_before_current.reverse()
+    full_context = sents_before_current + [current_line] + sents_after_current
+    return full_context
 
 
 def files_to_dict():
@@ -60,13 +63,16 @@ def main():
                 source_line_nr_content = get_line_and_file(
                     filename_key, source_line_nr, collection)
                 wikihow_instance['Source_Context'] = source_line_nr_content
+                target_line_nr_content = get_line_and_file(
+                    filename_key, target_line_nr, collection)
+                wikihow_instance['Target_Context'] = target_line_nr_content
                 new.append(wikihow_instance)
                 if len(new) > 10:
                     break
 
     for elem in new:
-        print(elem['Source_tagged'])
-        print(elem['Source_Context'])
+        print(elem['Target_Tagged'])
+        print(elem['Target_Context'])
     print("-----------------")
 
 
