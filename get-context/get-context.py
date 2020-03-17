@@ -47,7 +47,7 @@ def files_to_dict():
 
 def main():
     print("load pickle")
-    with open('dev-files-in-dict-format.pickle', 'rb') as pickle_in:
+    with open('test-files-in-dict-format.pickle', 'rb') as pickle_in:
         collection = pickle.load(pickle_in)
 
     print("load json")
@@ -57,7 +57,7 @@ def main():
         bar = Bar('Processing', max=len(content))
         for wikihow_instance in content:
             bar.next()
-            if wikihow_instance['Loc_in_splits'] == 'DEV':
+            if wikihow_instance['Loc_in_splits'] == 'TEST':
                 source_line_nr = wikihow_instance['Source_Line_Nr'][0]
                 target_line_nr = wikihow_instance['Target_Line_Nr'][-1]
                 filename = wikihow_instance['Filename']
@@ -71,7 +71,7 @@ def main():
                 new.append(wikihow_instance)
             bar.finish()
 
-    with open('DIFF-NOUN-MODIFICATIONS-LINE-NR.json', 'w') as json_out:
+    with open('../classification-scripts/classification-data/DIFF-NOUN-MODIFICATIONS-TEST.json', 'w') as json_out:
         json.dump(new, json_out)
 
 
