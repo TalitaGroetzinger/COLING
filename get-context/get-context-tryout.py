@@ -2,6 +2,7 @@ import bz2
 import os
 import pickle
 import json
+from progress.bar import Bar
 
 
 def get_line_and_file(filename, line_nr, collection):
@@ -11,7 +12,7 @@ def get_line_and_file(filename, line_nr, collection):
     sentence_nrs = [key for key, _ in collection[filename].items()]
     list_positions = [i for i in range(len(sentence_nrs))]
     # get the index of the line before and after
-    window_range = [1, 2, 3]
+    window_range = [1, 2, 3, 4, 5]
     sents_before_current = []
     sents_after_current = []
     for window in window_range:
@@ -52,9 +53,10 @@ def main():
     print("load json")
     with open('../classification-scripts/classification-data/DIFF-NOUN-MODIFICATIONS-LINE-NR.json', 'r') as json_in:
         content = json.load(json_in)
-
         new = []
+        bar = Bar('Processing', max=len(content))
         for wikihow_instance in content:
+            bar.next()
             if wikihow_instance['Loc_in_splits'] == 'DEV':
                 source_line_nr = wikihow_instance['Source_Line_Nr'][0]
                 target_line_nr = wikihow_instance['Target_Line_Nr'][-1]
@@ -67,13 +69,10 @@ def main():
                     filename_key, target_line_nr, collection)
                 wikihow_instance['Target_Context'] = target_line_nr_content
                 new.append(wikihow_instance)
-                if len(new) > 10:
-                    break
+            bar.finish()
 
-    for elem in new:
-        print(elem['Target_Tagged'])
-        print(elem['Target_Context'])
-    print("-----------------")
+    with open('DIFF-NOUN-MODIFICATIONS-LINE-NR.json', 'w') as json_out:
+        json.dump(new, json_out)
 
 
 main()
