@@ -13,7 +13,7 @@ import pickle
 def load_json(different_noun_modifications=True):
     if different_noun_modifications:
         #path = './classification-data/DIFF-NOUN-MODIFICATIONS.json'
-        path = '../data/DIFF-NOUN-MODIFICATIONS-LINE-NR.json'
+        path = './classification-data/DIFF-NOUN-MODIFICATIONS-CONTEXT.json'
         print("Using file with DIFF-NOUN-MODIFICATIONS: ", path)
         with open(path, 'r') as json_in:
             list_of_wikihow_instances = json.load(json_in)
@@ -71,6 +71,50 @@ def get_XY(list_of_wikihow_instances, use_test_set=False, diff_noun_file=True):
         return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
     else:
         return Xtrain, Ytrain, Xdev, Ydev
+
+
+def get_docs_labels(list_of_wikihow_instances, diff_noun_file=True):
+    X = []
+    Y = []
+    if diff_noun_file:
+        print("use DIFF-NOUNS")
+    else:
+        print("use SAME-NOUNS")
+    for wikihow_instance in list_of_wikihow_instances:
+        if diff_noun_file:
+            source_untokenized = ' '.join(
+                [pair[0] for pair in wikihow_instance['Source_tagged']])
+            target_untokenized = ' '.join(
+                [pair[0] for pair in wikihow_instance['Target_Tagged']])
+        else:
+            source_untokenized = ' '.join(
+                [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
+            target_untokenized = ' '.join(
+                [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
+        X.append(source_untokenized)
+        Y.append(0)
+        X.append(target_untokenized)
+        Y.append(1)
+    return X, Y
+
+
+def get_XY_from_predefined(path_to_train, path_to_test, path_to_dev):
+    Xdev = []
+    Ydev = []
+    Xtrain = []
+    Ytrain = []
+    Xtest = []
+    Ytest = []
+    with open(path_to_train, 'r') as train_json:
+        full_train = json.load(train_json)
+    with open(path_to_test, 'r') as test_json:
+        full_test = json.load(test_json)
+    with open(path_to_dev, 'r') as dev_json:
+        full_dev = json.load(dev_json)
+    Xtrain, Ytrain = get_docs_labels(full_train)
+    Xdev, Ydev = get_docs_labels(full_dev)
+    Xtest, Ytest = get_docs_labels(full_test)
+    return Xtrain, Ytrain, Xdev, Ydev
 
 
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
@@ -174,18 +218,18 @@ def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
 
 def main():
     # read json file
-    list_of_wikihow_instances = load_json()
-    # get everything for different noun modifications
-    print(list_of_wikihow_instances[0].keys())
-
-    Xtrain, Ytrain, Xdev, Ydev = get_XY(
-        list_of_wikihow_instances)
+    path_to_train = './classification-data/DIFF-NOUN-MODIFICATIONS-TRAIN.JSON'
+    path_to_dev = './classification-data/DIFF-NOUN-MODIFICATIONS-DEV.JSON'
+    path_to_test = './classification-data/DIFF-NOUN-MODIFICATIONS-TEST.JSON'
+    Xtrain, Ytrain, Xdev, Ydev = get_XY_from_predefined(
+        path_to_train, path_to_test, path_to_dev)
     positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
                                                       Xdev, Ydev)
 
     # remember, predictions are made on the development set.
 
-    development_set = get_specific_set_from_data(list_of_wikihow_instances)
+    with open(path_to_dev, 'r') as json_in:
+        development_set = json.load(json_in)
     pos_message = "get positive cases"
     get_error_analysis_by_cat(development_set, positive_cases, pos_message)
     print("---------------------------------------------------------")
