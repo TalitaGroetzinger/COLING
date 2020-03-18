@@ -34,7 +34,7 @@ def add_entailment_relations(list_of_wikihow_instances, pdb):
 
 
 def main():
-    with open('../data/diff_noun_modifications.json', 'r') as json_in:
+    with open('../data/first-step-same-nouns.json', 'r') as json_in:
         content = json.load(json_in)
 
     ppdb = read_ppdb('../data/ppdb/ppdb-xxxl-lexical.txt')
@@ -42,7 +42,7 @@ def main():
         content, ppdb)
 
     print(len(list_with_pdb_relations))
-    with open('diff_noun_modifications_PPDB_tagged.json', 'w') as json_file:
+    with open('../data/second-step-same-nouns.json', 'w') as json_file:
         json.dump(list_with_pdb_relations, json_file)
 
 

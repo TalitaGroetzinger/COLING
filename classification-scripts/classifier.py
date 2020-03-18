@@ -218,6 +218,7 @@ def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
 
 def main():
     # read json file
+    """
     path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN.JSON'
     path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV.JSON'
     path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST.JSON'
@@ -230,12 +231,24 @@ def main():
 
     with open(path_to_dev, 'r') as json_in:
         development_set = json.load(json_in)
+    """
+
+    with open('./same-noun-modifications/same-noun-modifications-keys.json', 'r') as json_in:
+        list_of_wikihow_instances = json.load(json_in)
+    print(list_of_wikihow_instances[0].keys())
+    Xtrain, Ytrain, Xdev, Ydev = get_XY(
+        list_of_wikihow_instances, use_test_set=False, diff_noun_file=False)
+
+    positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
+                                                      Xdev, Ydev)
+    """
     pos_message = "get positive cases"
     get_error_analysis_by_cat(development_set, positive_cases, pos_message)
     print("---------------------------------------------------------")
     neg_message = "get negative cases"
     get_error_analysis_by_cat(development_set, negative_cases, neg_message)
     print(len(Ydev)/2)
+    """
 
 
 if __name__ == '__main__':

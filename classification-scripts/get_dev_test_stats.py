@@ -44,26 +44,19 @@ def check_filenames_in_json(json_file, list_of_dev_files, list_of_test_files):
 
 def main():
     list_of_dev_files = get_list_of_filenames(
-        './classification-data/dev_files.txt')
+        './scripts_from_server/wikihow_dev_files.txt')
     list_of_test_files = get_list_of_filenames(
-        './classification-data/test_files.txt')
+        './scripts_from_server/wikihow_test_files.txt')
 
-    with open('./classification-data/noun_corrections_ppdb_tagged_v3_with_split_info.json', 'r') as json_in:
+    with open('../data/second-step-same-nouns.json', 'r') as json_in:
         list_of_wikihow_instances = json.load(json_in)
     print(len(list_of_wikihow_instances))
 
     collection = check_filenames_in_json(
         list_of_wikihow_instances, list_of_dev_files, list_of_test_files)
 
-    # to get train files:
-    with open('../classification-scripts/classification-data/DIFF-NOUN-MODIFICATIONS.json') as json_in:
-        content = json.load(json_in)
-
-    collection = json_to_txt(content)
-    with open('train.txt', 'w') as file_out:
-        for filename in collection:
-            line_to_write = "{0}\n".format(filename)
-            file_out.write(line_to_write)
+    with open('./same-noun-modifications/same-noun-modifications-splits-NEW.json', 'w') as json_out:
+        json.dump(collection, json_out)
 
 
 main()
