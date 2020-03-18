@@ -218,9 +218,9 @@ def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
 
 def main():
     # read json file
-    path_to_train = './classification-data/DIFF-NOUN-MODIFICATIONS-TRAIN.JSON'
-    path_to_dev = './classification-data/DIFF-NOUN-MODIFICATIONS-DEV.JSON'
-    path_to_test = './classification-data/DIFF-NOUN-MODIFICATIONS-TEST.JSON'
+    path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN.JSON'
+    path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV.JSON'
+    path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST.JSON'
     Xtrain, Ytrain, Xdev, Ydev = get_XY_from_predefined(
         path_to_train, path_to_test, path_to_dev)
     positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
