@@ -10,69 +10,6 @@ import gensim
 import pickle
 
 
-def load_json(different_noun_modifications=True):
-    if different_noun_modifications:
-        #path = './classification-data/DIFF-NOUN-MODIFICATIONS.json'
-        path = './classification-data/DIFF-NOUN-MODIFICATIONS-CONTEXT.json'
-        print("Using file with DIFF-NOUN-MODIFICATIONS: ", path)
-        with open(path, 'r') as json_in:
-            list_of_wikihow_instances = json.load(json_in)
-
-    else:
-        path = './classification-data/SAME-NOUN-MODIFICATIONS.json'
-        print("Using file with SAME-NOUN-MODIFICATIONS: ", path)
-        with open(path, 'r') as json_in:
-            list_of_wikihow_instances = json.load(json_in)
-    return list_of_wikihow_instances
-
-
-def get_XY(list_of_wikihow_instances, use_test_set=False, diff_noun_file=True):
-    Xdev = []
-    Ydev = []
-    Xtrain = []
-    Ytrain = []
-    Xtest = []
-    Ytest = []
-    if diff_noun_file:
-        print("USE DIFF NOUN FILE ...")
-    else:
-        print("USE SAME NOUN FILE .... ")
-    for wikihow_instance in list_of_wikihow_instances:
-        # this  if-else is necessary because the two json files have different keys :(
-        if diff_noun_file:
-            source_untokenized = ' '.join(
-                [pair[0] for pair in wikihow_instance['Source_tagged']])
-            target_untokenized = ' '.join(
-                [pair[0] for pair in wikihow_instance['Target_Tagged']])
-        else:
-            source_untokenized = ' '.join(
-                [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
-            target_untokenized = ' '.join(
-                [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
-        if wikihow_instance['Loc_in_splits'] == 'TRAIN':
-            Xtrain.append(source_untokenized)
-            Ytrain.append(0)
-            Xtrain.append(target_untokenized)
-            Ytrain.append(1)
-        elif wikihow_instance['Loc_in_splits'] == 'DEV':
-            Xdev.append(source_untokenized)
-            Ydev.append(0)
-            Xdev.append(target_untokenized)
-            Ydev.append(1)
-        else:
-            Xtest.append(source_untokenized)
-            Ytest.append(0)
-            Xtest.append(target_untokenized)
-            Ytest.append(1)
-    print("Train cases:", len(Xtrain))
-    print("Dev cases: ", len(Xdev))
-    print("test cases: ", len(Xtest))
-    if use_test_set:
-        return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
-    else:
-        return Xtrain, Ytrain, Xdev, Ydev
-
-
 def get_docs_labels(list_of_wikihow_instances, diff_noun_file=True):
     X = []
     Y = []
@@ -98,7 +35,7 @@ def get_docs_labels(list_of_wikihow_instances, diff_noun_file=True):
     return X, Y
 
 
-def get_XY_from_predefined(path_to_train, path_to_test, path_to_dev):
+def get_XY_from_predefined(path_to_train, path_to_test, path_to_dev, different_nouns=True):
     Xdev = []
     Ydev = []
     Xtrain = []
@@ -111,9 +48,14 @@ def get_XY_from_predefined(path_to_train, path_to_test, path_to_dev):
         full_test = json.load(test_json)
     with open(path_to_dev, 'r') as dev_json:
         full_dev = json.load(dev_json)
-    Xtrain, Ytrain = get_docs_labels(full_train)
-    Xdev, Ydev = get_docs_labels(full_dev)
-    Xtest, Ytest = get_docs_labels(full_test)
+    if different_nouns:
+        Xtrain, Ytrain = get_docs_labels(full_train)
+        Xdev, Ydev = get_docs_labels(full_dev)
+        Xtest, Ytest = get_docs_labels(full_test)
+    else:
+        Xtrain, Ytrain = get_docs_labels(full_train, False)
+        Xdev, Ydev = get_docs_labels(full_dev, False)
+        Xtest, Ytest = get_docs_labels(full_test, False)
     return Xtrain, Ytrain, Xdev, Ydev
 
 
@@ -163,16 +105,15 @@ def get_most_informative_features(classifier, vec, top_features=10):
         vec.get_feature_names(), pos_class_prob_sorted[:top_features]))
 
 
-def run_all_noun_types():
-    list_of_wikihow_instances = load_json()
+def run_all_noun_types(path_to_train_same, path_to_dev_same, path_to_test_same, path_to_train_diff, path_to_dev_diff, path_to_test_diff):
+
     # get everything for different noun modifications
-    XtrainDIFF, YtrainDIFF, XdevDIFF, YdevDIFF = get_XY(
-        list_of_wikihow_instances)
+    XtrainDIFF, YtrainDIFF, XdevDIFF, YdevDIFF = get_XY_from_predefined(
+        path_to_train_diff, path_to_test_diff, path_to_dev_diff)
 
     # get everything for same noun modifications
-    same_list_of_wikihow_instances = load_json(False)
-    XtrainSAME, YtrainSAME, XdevSAME, YdevSAME = get_XY(
-        same_list_of_wikihow_instances, False, False)
+    XtrainSAME, YtrainSAME, XdevSAME, YdevSAME = get_XY_from_predefined(
+        path_to_train_same, path_to_test_same, path_to_dev_same)
 
     Xtrain = XtrainDIFF + XtrainSAME
     Ytrain = YtrainDIFF + YtrainSAME
@@ -185,7 +126,7 @@ def run_all_noun_types():
 
 def get_specific_set_from_data(list_of_wikihow_instances, split='DEV'):
     """
-        Parameter of split should be: TRAIN, DEV, TEST 
+        Parameter of split should be: TRAIN, DEV, TEST
     """
     requested_set = [
         wikihow_instance for wikihow_instance in list_of_wikihow_instances if wikihow_instance['Loc_in_splits'] == split]
@@ -195,7 +136,7 @@ def get_specific_set_from_data(list_of_wikihow_instances, split='DEV'):
 def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
     """
         set_to_inspect: list of all development/train/test wikihow instances
-        list_of_indexes: list with indexes of negative cases or list with indexes of positive cases, as returned by 
+        list_of_indexes: list with indexes of negative cases or list with indexes of positive cases, as returned by
         train_classifier()
     """
     freq_dist_entailment = Counter()
@@ -218,10 +159,10 @@ def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
 
 def main():
     # read json file
-    """
-    path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN.JSON'
-    path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV.JSON'
-    path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST.JSON'
+
+    path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN.JSON'
+    path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV.JSON'
+    path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST.JSON'
     Xtrain, Ytrain, Xdev, Ydev = get_XY_from_predefined(
         path_to_train, path_to_test, path_to_dev)
     positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
@@ -231,24 +172,13 @@ def main():
 
     with open(path_to_dev, 'r') as json_in:
         development_set = json.load(json_in)
-    """
 
-    with open('./same-noun-modifications/same-noun-modifications-keys.json', 'r') as json_in:
-        list_of_wikihow_instances = json.load(json_in)
-    print(list_of_wikihow_instances[0].keys())
-    Xtrain, Ytrain, Xdev, Ydev = get_XY(
-        list_of_wikihow_instances, use_test_set=False, diff_noun_file=False)
-
-    positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
-                                                      Xdev, Ydev)
-    """
     pos_message = "get positive cases"
     get_error_analysis_by_cat(development_set, positive_cases, pos_message)
     print("---------------------------------------------------------")
     neg_message = "get negative cases"
     get_error_analysis_by_cat(development_set, negative_cases, neg_message)
     print(len(Ydev)/2)
-    """
 
 
 if __name__ == '__main__':
