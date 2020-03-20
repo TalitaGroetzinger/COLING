@@ -2,12 +2,15 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
+from nltk.tokenize import word_tokenize
 from sklearn.pipeline import Pipeline
 from collections import Counter
 import json
 import numpy as np
 import gensim
 import pickle
+import nltk
+from features import get_length_features, get_postags, pos_tags_and_length
 
 
 def get_docs_labels(list_of_wikihow_instances, diff_noun_file=True):
@@ -35,7 +38,7 @@ def get_docs_labels(list_of_wikihow_instances, diff_noun_file=True):
     return X, Y
 
 
-def get_XY_from_predefined(path_to_train, path_to_test, path_to_dev, different_nouns=True):
+def get_xy(path_to_train, path_to_test, path_to_dev, different_nouns=True):
     Xdev = []
     Ydev = []
     Xtrain = []
@@ -59,15 +62,17 @@ def get_XY_from_predefined(path_to_train, path_to_test, path_to_dev, different_n
     return Xtrain, Ytrain, Xdev, Ydev
 
 
-def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
+def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 1)):
     """
         Slightly modified from Irshad.
     """
     # vectorize data
     print("Vectorize the data ...")
     count_vec = CountVectorizer(max_features=None, lowercase=False,
-                                ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
+                                ngram_range=ngram_range_value, stop_words=None, tokenizer=pos_tags_and_length, preprocessor=word_tokenize)
+
     Xtrain_BOW = count_vec.fit_transform(Xtrain)
+
     Xdev_BOW = count_vec.transform(Xdev)
     normalize(Xtrain_BOW, copy=False)
     normalize(Xdev_BOW, copy=False)
@@ -108,11 +113,11 @@ def get_most_informative_features(classifier, vec, top_features=10):
 def run_all_noun_types(path_to_train_same, path_to_dev_same, path_to_test_same, path_to_train_diff, path_to_dev_diff, path_to_test_diff):
 
     # get everything for different noun modifications
-    XtrainDIFF, YtrainDIFF, XdevDIFF, YdevDIFF = get_XY_from_predefined(
+    XtrainDIFF, YtrainDIFF, XdevDIFF, YdevDIFF = get_xy(
         path_to_train_diff, path_to_test_diff, path_to_dev_diff)
 
     # get everything for same noun modifications
-    XtrainSAME, YtrainSAME, XdevSAME, YdevSAME = get_XY_from_predefined(
+    XtrainSAME, YtrainSAME, XdevSAME, YdevSAME = get_xy(
         path_to_train_same, path_to_test_same, path_to_dev_same)
 
     Xtrain = XtrainDIFF + XtrainSAME
@@ -157,14 +162,24 @@ def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
     print("TOTAL RELATIONS: ", total)
 
 
+def get_paths(different_nouns=True):
+    if different_nouns:
+        path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN.JSON'
+        path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV.JSON'
+        path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST.JSON'
+    else:
+        path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN.JSON'
+        path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV.JSON'
+        path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST.JSON'
+    return path_to_train, path_to_dev, path_to_test
+
+
 def main():
     # read json file
 
-    path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN.JSON'
-    path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV.JSON'
-    path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST.JSON'
-    Xtrain, Ytrain, Xdev, Ydev = get_XY_from_predefined(
-        path_to_train, path_to_test, path_to_dev)
+    path_to_train, path_to_dev, path_to_test = get_paths(True)
+    Xtrain, Ytrain, Xdev, Ydev = get_xy(
+        path_to_train, path_to_test, path_to_dev, True)
     positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
                                                       Xdev, Ydev)
 
@@ -178,7 +193,6 @@ def main():
     print("---------------------------------------------------------")
     neg_message = "get negative cases"
     get_error_analysis_by_cat(development_set, negative_cases, neg_message)
-    print(len(Ydev)/2)
 
 
 if __name__ == '__main__':
