@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from nltk.tokenize import word_tokenize
 from sklearn.pipeline import Pipeline
 from collections import Counter
+from progress.bar import Bar
 import json
 import numpy as np
 import gensim
@@ -38,7 +39,20 @@ def get_docs_labels(list_of_wikihow_instances, diff_noun_file=True):
     return X, Y
 
 
-def get_xy(path_to_train, path_to_test, path_to_dev, different_nouns=True):
+def get_docs_labels_context(list_of_wikihow_instances):
+    X = []
+    Y = []
+    for wikihow_instance in list_of_wikihow_instances:
+        source_context = wikihow_instance['Source_Context_5_Processed']
+        target_context = wikihow_instance['Target_Context_5_Processed']
+        X.append(source_context)
+        Y.append(0)
+        X.append(target_context)
+        Y.append(1)
+    return X, Y
+
+
+def get_xy(path_to_train, path_to_test, path_to_dev, different_nouns=True, context=True):
     Xdev = []
     Ydev = []
     Xtrain = []
@@ -51,25 +65,32 @@ def get_xy(path_to_train, path_to_test, path_to_dev, different_nouns=True):
         full_test = json.load(test_json)
     with open(path_to_dev, 'r') as dev_json:
         full_dev = json.load(dev_json)
-    if different_nouns:
-        Xtrain, Ytrain = get_docs_labels(full_train)
-        Xdev, Ydev = get_docs_labels(full_dev)
-        Xtest, Ytest = get_docs_labels(full_test)
+
+    if context:
+        print("Run classifier on context ... ")
+        Xtrain, Ytrain = get_docs_labels_context(full_train)
+        Xtest, Ytest = get_docs_labels_context(full_test)
+        Xdev, Ydev = get_docs_labels_context(full_dev)
     else:
-        Xtrain, Ytrain = get_docs_labels(full_train, False)
-        Xdev, Ydev = get_docs_labels(full_dev, False)
-        Xtest, Ytest = get_docs_labels(full_test, False)
+        if different_nouns:
+            Xtrain, Ytrain = get_docs_labels(full_train)
+            Xdev, Ydev = get_docs_labels(full_dev)
+            Xtest, Ytest = get_docs_labels(full_test)
+        else:
+            Xtrain, Ytrain = get_docs_labels(full_train, False)
+            Xdev, Ydev = get_docs_labels(full_dev, False)
+            Xtest, Ytest = get_docs_labels(full_test, False)
     return Xtrain, Ytrain, Xdev, Ydev
 
 
-def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 1)):
+def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
     """
         Slightly modified from Irshad.
     """
     # vectorize data
     print("Vectorize the data ...")
     count_vec = CountVectorizer(max_features=None, lowercase=False,
-                                ngram_range=ngram_range_value, stop_words=None, tokenizer=pos_tags_and_length, preprocessor=word_tokenize)
+                                ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
 
     Xtrain_BOW = count_vec.fit_transform(Xtrain)
 
@@ -164,9 +185,9 @@ def get_error_analysis_by_cat(set_to_inspect, list_of_indexes, message):
 
 def get_paths(different_nouns=True):
     if different_nouns:
-        path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN.JSON'
-        path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV.JSON'
-        path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST.JSON'
+        path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
+        path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'
+        path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'
     else:
         path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN.JSON'
         path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV.JSON'
@@ -178,8 +199,10 @@ def main():
     # read json file
 
     path_to_train, path_to_dev, path_to_test = get_paths(True)
+
     Xtrain, Ytrain, Xdev, Ydev = get_xy(
         path_to_train, path_to_test, path_to_dev, True)
+
     positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
                                                       Xdev, Ydev)
 
