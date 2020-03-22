@@ -10,3 +10,6 @@ classification-scripts/classification-data
 get-context/dev-files-example
 classification-scripts/different-noun-modifications
 classification-scripts/same-noun-modifications
+get-context/dev_files_same_noun.txt
+get-context/test_files_same_noun.txt
+get-context/train_file_same_noun.txt
