@@ -189,16 +189,16 @@ def get_paths(different_nouns=True):
         path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'
         path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'
     else:
-        path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN.JSON'
-        path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV.JSON'
-        path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST.JSON'
+        path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
+        path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'
+        path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'
     return path_to_train, path_to_dev, path_to_test
 
 
 def main():
     # read json file
 
-    path_to_train, path_to_dev, path_to_test = get_paths(True)
+    path_to_train, path_to_dev, path_to_test = get_paths(False)
 
     Xtrain, Ytrain, Xdev, Ydev = get_xy(
         path_to_train, path_to_test, path_to_dev, True)
