@@ -70,16 +70,23 @@ def get_matching_sent_context(context, sent, windows=[1, 2, 3, 4, 5]):
     return context
 
 
-def add_filtered_context(list_of_wikihow_instances):
+def add_filtered_context(list_of_wikihow_instances, different_nouns=True):
     print(len(list_of_wikihow_instances))
     bar = Bar('Processing ... ', max=len(list_of_wikihow_instances))
     new_wikihow_instances = []
     for wikihow_instance in list_of_wikihow_instances:
         bar.next()
-        source_tokenized = [pair[0]
-                            for pair in wikihow_instance['Source_Line_Tagged']]
-        target_tokenized = [pair[0]
-                            for pair in wikihow_instance['Target_Line_Tagged']]
+        if different_nouns:
+            source_tokenized = [pair[0]
+                                for pair in wikihow_instance['Source_Line_Tagged']]
+            target_tokenized = [pair[0]
+                                for pair in wikihow_instance['Target_Line_Tagged']]
+        else:
+            source_tokenized = [pair[0]
+                                for pair in wikihow_instance['Source_tagged']]
+            target_tokenized = [pair[0]
+                                for pair in wikihow_instance['Target_Tagged']]
+
         source_context_filtered = get_matching_sent_context(
             wikihow_instance['Source_Context'], source_tokenized)
         wikihow_instance['Source_Context_5'] = source_context_filtered
@@ -102,10 +109,24 @@ if __name__ == '__main__':
     args = vars(ap.parse_args())
     filename_to_open = args['input']
     filename_to_write = args['output']
+    print("filename: ", filename_to_open)
+    print("filename to write: ", filename_to_write)
     with open(filename_to_open, "r") as json_in:
-        same_noun_dev = json.load(json_in)
-    new_dev = add_filtered_context(same_noun_dev)
-    for elem in new_dev[0:100]:
-        print(elem['Source_Tokenized'])
+        wikihow_instances = json.load(json_in)
+    new_wikihow_instances = add_filtered_context(wikihow_instances, False)
+    print("------------------------------------")
+    print("examples: ")
+    for elem in new_wikihow_instances[0:10]:
+        print(elem['Source_tagged'])
         print(elem['Source_Context_5'])
-        print("----------------------------------")
+    print("----------------------------------")
+
+    try:
+        assert len(wikihow_instances) == len(new_wikihow_instances)
+    except AssertionError:
+        print("Length is not the same: ")
+        print("Length file-in: ", len(wikihow_instances))
+        print("Length file-out: ", len(new_wikihow_instances))
+
+    with open(filename_to_write, 'w') as json_out:
+        json.dump(new_wikihow_instances, json_out)
