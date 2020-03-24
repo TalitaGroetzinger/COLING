@@ -35,6 +35,15 @@ def get_length_features(document, thresshold=15):
     return [word + '_' + length_type for word in document]
 
 
+def get_length_features_context(document, thresshold=150):
+    length_doc = len(document)
+    if length_doc > thresshold:
+        length_type = "long"
+    else:
+        length_type = "short"
+    return [word + '_' + length_type for word in document]
+
+
 def get_postags(tokens):
     '''
         Returns part-of-speech tags

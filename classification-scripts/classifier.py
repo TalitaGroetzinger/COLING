@@ -11,7 +11,7 @@ import numpy as np
 import gensim
 import pickle
 import nltk
-from features import get_length_features, get_postags, pos_tags_and_length
+from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context
 
 
 def get_docs_labels(list_of_wikihow_instances, diff_noun_file=True):
@@ -72,6 +72,7 @@ def get_xy(path_to_train, path_to_test, path_to_dev, different_nouns=True, conte
         Xtest, Ytest = get_docs_labels_context(full_test)
         Xdev, Ydev = get_docs_labels_context(full_dev)
     else:
+        print("Do not use context ...")
         if different_nouns:
             Xtrain, Ytrain = get_docs_labels(full_train)
             Xdev, Ydev = get_docs_labels(full_dev)
@@ -89,9 +90,11 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
     """
     # vectorize data
     print("Vectorize the data ...")
-    count_vec = CountVectorizer(max_features=None, lowercase=False,
-                                ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
+    # count_vec = TfidfVectorizer(max_features=None, lowercase=False,
+    #                            ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
 
+    count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=ngram_range_value,
+                                tokenizer=pos_tags_and_length, preprocessor=word_tokenize)
     Xtrain_BOW = count_vec.fit_transform(Xtrain)
 
     Xdev_BOW = count_vec.transform(Xdev)
@@ -198,17 +201,22 @@ def get_paths(different_nouns=True):
 def main():
     # read json file
 
-    path_to_train, path_to_dev, path_to_test = get_paths(False)
+    path_to_train_same, path_to_dev_same, path_to_test_same = get_paths(False)
+    path_to_train_diff, path_to_dev_diff, path_to_test_diff = get_paths(True)
 
+    # run_all_noun_types(path_to_train_same, path_to_dev_same, path_to_test_same,
+    #                   path_to_train_diff, path_to_dev_diff, path_to_test_diff)
+
+    # def get_xy(path_to_train, path_to_test, path_to_dev, different_nouns=True, context=True):
     Xtrain, Ytrain, Xdev, Ydev = get_xy(
-        path_to_train, path_to_test, path_to_dev, True)
+        path_to_train_diff, path_to_test_diff, path_to_dev_diff, True)
 
     positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
                                                       Xdev, Ydev)
 
     # remember, predictions are made on the development set.
 
-    with open(path_to_dev, 'r') as json_in:
+    with open(path_to_dev_same, 'r') as json_in:
         development_set = json.load(json_in)
 
     pos_message = "get positive cases"
