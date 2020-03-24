@@ -94,7 +94,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
     #                            ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
 
     count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=ngram_range_value,
-                                tokenizer=pos_tags_and_length, preprocessor=word_tokenize)
+                                tokenizer=get_postags, preprocessor=word_tokenize)
     Xtrain_BOW = count_vec.fit_transform(Xtrain)
 
     Xdev_BOW = count_vec.transform(Xdev)
