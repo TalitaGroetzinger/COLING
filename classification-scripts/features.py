@@ -37,7 +37,7 @@ def get_length_features(document, thresshold=15):
 
 def get_length_features_context(document, thresshold=150):
     length_doc = len(document)
-    if length_doc > thresshold:
+    if length_doc > 150:
         length_type = "long"
     else:
         length_type = "short"
@@ -51,9 +51,9 @@ def get_postags(tokens):
     return [token + "_POS-"+tag for token, tag in nltk.pos_tag(tokens)]
 
 
-def pos_tags_and_length(document, thresshold=15):
+def pos_tags_and_length(document, thresshold=150):
     length_doc = len(document)
-    if length_doc > 15:
+    if length_doc > 150:
         length_type = "long"
     else:
         length_type = "short"
