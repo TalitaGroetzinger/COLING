@@ -85,3 +85,47 @@ def pos_tags_and_length(document, thresshold=150):
 
 lrec_vec = CountVectorizer(max_features=None, lowercase=False,
                            ngram_range=(1, 2), stop_words=None, token_pattern='[^ ]+')
+
+
+def compute_coherence(doc):
+    """
+        Input: X formatted with __REV__
+    """
+
+    freq = Counter()
+    d = {}
+    print("DOC")
+    for word in doc:
+        print(word)
+        if '__REV__' in word:
+            freq[word.lower()] += 1
+    bow = dict(freq)
+    coherence_score = 0
+    for key, _ in bow.items():
+        if bow[key] > 1:
+            coherence_score += 1
+        else:
+            coherence_score += 0
+    score = coherence_score / len(bow)
+    d["score"] = score
+    return d
+
+
+class CoherenceFeatures(BaseEstimator, TransformerMixin):
+
+    def fit(self, x, y=None):
+        return self
+
+    def _get_features(self, doc):
+        coherence = compute_coherence(doc)
+        return coherence
+
+    def transform(self, raw_documents):
+        return [self._get_features(doc) for doc in raw_documents]
+
+
+coherence_vec = Pipeline(
+    [
+        ('feat', CoherenceFeatures()), ('vec', DictVectorizer())
+    ]
+)

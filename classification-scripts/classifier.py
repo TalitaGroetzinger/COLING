@@ -11,7 +11,7 @@ import numpy as np
 import gensim
 import pickle
 import nltk
-from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context
+from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context, coherence_vec
 
 
 def get_docs_labels(list_of_wikihow_instances, diff_noun_file=True):

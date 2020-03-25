@@ -12,7 +12,25 @@ import numpy as np
 import gensim
 import pickle
 import nltk
-from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context
+from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context, coherence_vec
+
+
+def mark_cases(context, matches, source=True):
+    if source:
+        match = [elem[0][0].lower() for elem in matches]
+    else:
+        match = [elem[1][0].lower() for elem in matches]
+
+    document = word_tokenize(context)
+
+    final_rep = []
+    for word in document:
+        if word.lower() in match:
+            word = word + "__REV__"
+            final_rep.append(word)
+        else:
+            final_rep.append(word)
+    return final_rep
 
 
 def get_most_informative_features(classifier, vec, top_features=10):
@@ -27,51 +45,20 @@ def get_most_informative_features(classifier, vec, top_features=10):
         vec.get_feature_names(), pos_class_prob_sorted[:top_features]))
 
 
-def check_word_in_context(list_of_wikihow_instances):
-    # count all the words in the context and make a dict representation of it
+def get_docs_labels_context(list_of_wikihow_instances):
     X = []
     Y = []
     for wikihow_instance in list_of_wikihow_instances:
-        source_dict = {}
-        word_frequency = Counter()
-        match = wikihow_instance['PPDB_Matches']
-        context = wikihow_instance['Source_Context_5_Processed']
-        ppdb_matches = [elem[0][0] for elem in match]
-
-        # make BOW for tokenized
-        tokenized = word_tokenize(context)
-        for token in tokenized:
-            token = token.lower()
-            word_frequency[token] += 1
-
-        for ppdb_match in ppdb_matches:
-            if ppdb_match.lower() in dict(word_frequency).keys():
-                count_for_match = word_frequency[ppdb_match]
-                if count_for_match > 1:
-                    source_dict[ppdb_match] = True
-                else:
-                    source_dict[ppdb_match] = False
-        X.append(source_dict)
-        Y.append(0)
-        # repeat procedure for target
-        target_dict = {}
-        target_match = wikihow_instance['PPDB_Matches']
+        source_context = wikihow_instance['Source_Context_5_Processed']
         target_context = wikihow_instance['Target_Context_5_Processed']
-        target_ppdb_matches = [elem[1][0] for elem in target_match]
-        tokenized_target = word_tokenize(target_context)
-        word_frequency_target = Counter()
-        for token in tokenized_target:
-            token = token.lower()
-            word_frequency_target[token] += 1
+        matches = wikihow_instance['PPDB_Matches']
 
-        for ppdb_match in target_ppdb_matches:
-            if ppdb_match.lower() in dict(word_frequency).keys():
-                count_for_match = word_frequency[ppdb_match]
-                if count_for_match > 1:
-                    target_dict[ppdb_match] = True
-                else:
-                    target_dict[ppdb_match] = False
-        X.append(target_dict)
+        new_source = mark_cases(source_context, matches, source=True)
+        new_target = mark_cases(target_context, matches, source=False)
+
+        X.append(new_source)
+        Y.append(0)
+        X.append(new_target)
         Y.append(1)
     return X, Y
 
@@ -84,18 +71,26 @@ def preprocess_data(train, dev, test):
     with open(test, 'r') as json_in_test:
         test_open = json.load(json_in_test)
 
-    Xtrain, Ytrain = check_word_in_context(train_open)
-    Xdev, Ydev = check_word_in_context(dev_open)
-    Xtest, Ytest = check_word_in_context(test_open)
+    Xtrain, Ytrain = get_docs_labels_context(train_open)
+    Xdev, Ydev = get_docs_labels_context(dev_open)
+    Xtest, Ytest = get_docs_labels_context(test_open)
     return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
 
 
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
-    vec = DictVectorizer()
     # hier moet de dict van Xtrain dus in
+    # fit to countvec
+    """
+    count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 1),
+                                tokenizer=pos_tags_and_length, preprocessor=word_tokenize)
+    Xtrain_fitted = count_vec.fit_transform(Xtrain)
+    Xdev_fitted = count_vec.transform(Xdev)
+    """
 
-    Xtrain_fitted = vec.fit_transform(Xtrain)
-    Xdev_fitted = vec.transform(Xdev)
+    Xtrain_fitted = coherence_vec.fit_transform(Xtrain)
+    Xdev_fitted = coherence_vec.transform(Xdev)
+    # ------------------------------------------------
+
     # classification
     classifier = MultinomialNB()
     classifier.fit(Xtrain_fitted, Ytrain)
@@ -115,7 +110,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
             list_of_bad_predictions.append(i)
     accuracy = (positive/(positive+negative))
     print("Accuracy: {0}".format(accuracy))
-    get_most_informative_features(classifier, vec)
+    get_most_informative_features(classifier, count_vec)
     return list_of_good_predictions, list_of_bad_predictions
 
 
@@ -137,10 +132,6 @@ def main():
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = preprocess_data(
         train, dev, test)
-
-    for elem in Xtrain[0:10]:
-        print(elem)
-        print('\n')
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
