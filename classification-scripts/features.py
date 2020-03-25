@@ -2,9 +2,32 @@ import gensim
 import numpy as np
 from sklearn.preprocessing import normalize
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.feature_extraction import DictVectorizer
 from nltk.tokenize import word_tokenize
 import nltk
+from sklearn.pipeline import Pipeline
+from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
+
+
+def check_word_in_context(context, matches):
+    # count all the words in the context and make a dict representation of it
+    word_frequency = Counter()
+    ppdb_matches = [elem[0][0] for elem in matches]
+
+    tokenized = word_tokenize(context)
+    for token in tokenized:
+        token = token.lower()
+        word_frequency[token] += 1
+    d = {}
+    for ppdb_match in ppdb_matches:
+        if ppdb_match.lower() in dict(word_frequency).keys():
+            count_for_match = word_frequency[ppdb_match]
+            if count_for_match > 1:
+                d[ppdb_match] = True
+            else:
+                d[ppdb_match] = False
+    return d
 
 
 class MeanEmbeddingVectorizer(object):
