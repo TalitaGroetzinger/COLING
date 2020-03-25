@@ -4,7 +4,7 @@ from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from nltk.tokenize import word_tokenize
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from collections import Counter
 from progress.bar import Bar
 import json
@@ -13,6 +13,18 @@ import gensim
 import pickle
 import nltk
 from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context
+
+
+def get_most_informative_features(classifier, vec, top_features=10):
+    print("------------------------------------")
+    print("---- Most informative features -----")
+    print("------------------------------------")
+    neg_class_prob_sorted = classifier.feature_log_prob_[0, :].argsort()
+    pos_class_prob_sorted = classifier.feature_log_prob_[1, :].argsort()
+    print("Source: ", np.take(
+        vec.get_feature_names(), neg_class_prob_sorted[:top_features]))
+    print("Target: ", np.take(
+        vec.get_feature_names(), pos_class_prob_sorted[:top_features]))
 
 
 def check_word_in_context(list_of_wikihow_instances):
@@ -83,11 +95,11 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # hier moet de dict van Xtrain dus in
 
     Xtrain_fitted = vec.fit_transform(Xtrain)
-
     Xdev_fitted = vec.transform(Xdev)
-
+    # classification
     classifier = MultinomialNB()
     classifier.fit(Xtrain_fitted, Ytrain)
+
     print("Finished training ..")
     YpredictDev = classifier.predict_proba(Xdev_fitted)[:, 1]
     positive = 0
@@ -103,7 +115,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
             list_of_bad_predictions.append(i)
     accuracy = (positive/(positive+negative))
     print("Accuracy: {0}".format(accuracy))
-    # get_most_informative_features(classifier, count_vec)
+    get_most_informative_features(classifier, vec)
     return list_of_good_predictions, list_of_bad_predictions
 
 
@@ -125,6 +137,10 @@ def main():
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = preprocess_data(
         train, dev, test)
+
+    for elem in Xtrain[0:10]:
+        print(elem)
+        print('\n')
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
