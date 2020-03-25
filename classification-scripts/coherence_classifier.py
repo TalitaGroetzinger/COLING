@@ -12,7 +12,7 @@ import numpy as np
 import gensim
 import pickle
 import nltk
-from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context, coherence_vec
+from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context, coherence_vec, CoherenceFeatures, PreprocessFeatures
 
 
 def mark_cases(context, matches, source=True):
@@ -21,7 +21,12 @@ def mark_cases(context, matches, source=True):
     else:
         match = [elem[1][0].lower() for elem in matches]
 
-    document = word_tokenize(context)
+    document = []
+    for sent in context:
+        tokenized = word_tokenize(sent)
+        tokenized = [word[0] for word in nltk.pos_tag(tokenized)]
+        for word in tokenized:
+            document.append(word)
 
     final_rep = []
     for word in document:
@@ -80,15 +85,22 @@ def preprocess_data(train, dev, test):
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # hier moet de dict van Xtrain dus in
     # fit to countvec
-    """
     count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 1),
                                 tokenizer=pos_tags_and_length, preprocessor=word_tokenize)
+    """
     Xtrain_fitted = count_vec.fit_transform(Xtrain)
     Xdev_fitted = count_vec.transform(Xdev)
     """
+    print("fit data ... ")
+    vec = Pipeline(
+        [
+            ('feat', coherence_vec), ('Preprocessor',
+                                      PreprocessFeatures()), ('vec', count_vec)
+        ]
+    )
 
-    Xtrain_fitted = coherence_vec.fit_transform(Xtrain)
-    Xdev_fitted = coherence_vec.transform(Xdev)
+    Xtrain_fitted = vec.fit_transform(Xtrain)
+    Xdev_fitted = vec.transform(Xdev)
     # ------------------------------------------------
 
     # classification
@@ -96,6 +108,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     classifier.fit(Xtrain_fitted, Ytrain)
 
     print("Finished training ..")
+
     YpredictDev = classifier.predict_proba(Xdev_fitted)[:, 1]
     positive = 0
     negative = 0
@@ -110,19 +123,19 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
             list_of_bad_predictions.append(i)
     accuracy = (positive/(positive+negative))
     print("Accuracy: {0}".format(accuracy))
-    get_most_informative_features(classifier, count_vec)
+    get_most_informative_features(classifier, coherence_vec)
     return list_of_good_predictions, list_of_bad_predictions
 
 
 def get_paths(different_nouns=True):
     if different_nouns:
-        path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
-        path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'
-        path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'
+        path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5-v3.JSON'
+        path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-v3.JSON'
+        path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-v3.JSON'
     else:
-        path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
-        path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'
-        path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'
+        path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-v3.JSON'
+        path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-v3.JSON'
+        path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-v3.JSON'
     return path_to_train, path_to_dev, path_to_test
 
 

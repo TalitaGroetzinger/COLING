@@ -3,6 +3,7 @@ import json
 import argparse
 from nltk.tokenize import word_tokenize
 from pprint import pprint
+from features import CoherenceFeatures
 
 
 def get_processed_context(source_context):
@@ -25,12 +26,12 @@ def remove_timestamps(list_of_wikihow_instances):
     for wikihow_instance in list_of_wikihow_instances:
         bar.next()
         source_context = wikihow_instance['Source_Context_5']
-        wikihow_instance['Source_Context_5_Lists'] = get_processed_context(
+        wikihow_instance['Source_Context_5_Processed'] = get_processed_context(
             source_context)
 
         # repeat steps for target
         target_context = wikihow_instance['Target_Context_5']
-        wikihow_instance['Target_Context_5_Lists'] = get_processed_context(
+        wikihow_instance['Target_Context_5_Processed'] = get_processed_context(
             target_context)
 
         filtered.append(wikihow_instance)

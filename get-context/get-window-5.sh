@@ -1,2 +1,1 @@
-python process_context.py --input ../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN.json --output ../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5.json
-python process_context.py --input ../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST.json --output ../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5.json
+python filter_context.py --input ../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST.json --output ../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-v2.json

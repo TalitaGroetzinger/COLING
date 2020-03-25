@@ -96,7 +96,6 @@ def compute_coherence(doc):
     d = {}
     print("DOC")
     for word in doc:
-        print(word)
         if '__REV__' in word:
             freq[word.lower()] += 1
     bow = dict(freq)
@@ -117,7 +116,12 @@ class CoherenceFeatures(BaseEstimator, TransformerMixin):
         return self
 
     def _get_features(self, doc):
-        coherence = compute_coherence(doc)
+        try:
+            coherence = compute_coherence(doc)
+        # there is one case for which we can not compute the coherence due to tokenisation issues (T.V cannot become t.v.)
+        # since it's only once case, I will just provide the score here.
+        except ZeroDivisionError:
+            coherence = {"score": 1.0}
         return coherence
 
     def transform(self, raw_documents):
@@ -129,3 +133,15 @@ coherence_vec = Pipeline(
         ('feat', CoherenceFeatures()), ('vec', DictVectorizer())
     ]
 )
+
+
+class PreprocessFeatures(object):
+
+    def fit(self, X, y=None):
+        return self
+
+    def untokenize(self, document):
+        return ' '.join(document)
+
+    def transform(self, X):
+        return [self.untokenize(document) for document in X]

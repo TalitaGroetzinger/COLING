@@ -35,7 +35,7 @@ def sentence_splitter(document):
     return merged_item_sents
 
 
-def get_matching_sent_context(context, sent, windows=[1, 2, 3, 4, 5]):
+def get_matching_sent_context(context, sent, windows=[1, 2, 3, 4, 5], use_sent_from_context=False):
     """
         Use this function to get closest match to a source_line or target_line in a paragraph.
     """
@@ -66,7 +66,10 @@ def get_matching_sent_context(context, sent, windows=[1, 2, 3, 4, 5]):
             previous_sentences.append(previous_sent)
 
     previous_sentences.reverse()
-    context = previous_sentences + [matched_sent] + next_sentences
+    if use_sent_from_context:
+        context = previous_sentences + [matched_sent] + next_sentences
+    else:
+        context = previous_sentences + [' '.join(sent)] + next_sentences
     return context
 
 
