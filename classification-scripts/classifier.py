@@ -3,7 +3,7 @@ from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from nltk.tokenize import word_tokenize
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from collections import Counter
 from progress.bar import Bar
 import json
@@ -90,11 +90,19 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, ngram_range_value=(1, 2)):
     """
     # vectorize data
     print("Vectorize the data ...")
-    # count_vec = TfidfVectorizer(max_features=None, lowercase=False,
+    # count_vec = CountVectorizer(max_features=None, lowercase=False,
     #                            ngram_range=ngram_range_value, stop_words=None, token_pattern='[^ ]+')
 
-    count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=ngram_range_value,
-                                tokenizer=pos_tags_and_length, preprocessor=word_tokenize)
+    count_vec_1 = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=ngram_range_value,
+                                  tokenizer=get_length_features, preprocessor=word_tokenize)
+    count_vec_2 = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=ngram_range_value,
+                                  tokenizer=get_postags, preprocessor=word_tokenize)
+
+    count_vec = FeatureUnion([('count1', count_vec_1), ('count2', count_vec_2)
+
+
+                              ])
+
     Xtrain_BOW = count_vec.fit_transform(Xtrain)
 
     Xdev_BOW = count_vec.transform(Xdev)
@@ -138,11 +146,11 @@ def run_all_noun_types(path_to_train_same, path_to_dev_same, path_to_test_same, 
 
     # get everything for different noun modifications
     XtrainDIFF, YtrainDIFF, XdevDIFF, YdevDIFF = get_xy(
-        path_to_train_diff, path_to_test_diff, path_to_dev_diff)
+        path_to_train_diff, path_to_test_diff, path_to_dev_diff, different_nouns=True, context=False)
 
     # get everything for same noun modifications
     XtrainSAME, YtrainSAME, XdevSAME, YdevSAME = get_xy(
-        path_to_train_same, path_to_test_same, path_to_dev_same)
+        path_to_train_same, path_to_test_same, path_to_dev_same, different_nouns=False, context=False)
 
     Xtrain = XtrainDIFF + XtrainSAME
     Ytrain = YtrainDIFF + YtrainSAME
@@ -204,15 +212,15 @@ def main():
     path_to_train_same, path_to_dev_same, path_to_test_same = get_paths(False)
     path_to_train_diff, path_to_dev_diff, path_to_test_diff = get_paths(True)
 
-    # run_all_noun_types(path_to_train_same, path_to_dev_same, path_to_test_same,
-    #                   path_to_train_diff, path_to_dev_diff, path_to_test_diff)
+    run_all_noun_types(path_to_train_same, path_to_dev_same, path_to_test_same,
+                       path_to_train_diff, path_to_dev_diff, path_to_test_diff)
 
     # def get_xy(path_to_train, path_to_test, path_to_dev, different_nouns=True, context=True):
-    Xtrain, Ytrain, Xdev, Ydev = get_xy(
-        path_to_train_same, path_to_test_same, path_to_dev_same, True)
+    # Xtrain, Ytrain, Xdev, Ydev = get_xy(
+    #    path_to_train_same, path_to_test_same, path_to_dev_same, different_nouns=False, context=False)
 
-    positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
-                                                      Xdev, Ydev)
+    # positive_cases, negative_cases = train_classifier(Xtrain, Ytrain,
+    #                                                  Xdev, Ydev)
 
     # remember, predictions are made on the development set.
 

@@ -1,4 +1,4 @@
-from flair.embeddings import BertEmbeddings, Sentence, DocumentPoolEmbeddings, DocumentLSTMEmbeddings, DocumentRNNEmbeddings
+from flair.embeddings import BertEmbeddings, Sentence, DocumentPoolEmbeddings, DocumentRNNEmbeddings, WordEmbeddings
 from flair.models import TextClassifier
 from flair.data_fetcher import NLPTaskDataFetcher
 from flair.trainers import ModelTrainer
@@ -11,8 +11,9 @@ corpus = NLPTaskDataFetcher.load_classification_corpus(
 
 # load embeddings
 bert_embedding = BertEmbeddings()
+glove_embedding = WordEmbeddings('glove')
 document_embeddings = DocumentRNNEmbeddings(
-    [bert_embedding], reproject_words_dimension=512, rnn_type='LSTM')
+    [glove_embedding], rnn_type='LSTM')
 
 # load classifier
 classifier = TextClassifier(

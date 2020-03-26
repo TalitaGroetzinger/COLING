@@ -116,11 +116,11 @@ if __name__ == '__main__':
     print("filename to write: ", filename_to_write)
     with open(filename_to_open, "r") as json_in:
         wikihow_instances = json.load(json_in)
-    new_wikihow_instances = add_filtered_context(wikihow_instances, False)
+    new_wikihow_instances = add_filtered_context(wikihow_instances, True)
     print("------------------------------------")
     print("examples: ")
     for elem in new_wikihow_instances[0:10]:
-        print(elem['Source_tagged'])
+        print(elem['Source_Line_Tagged'])
         print(elem['Source_Context_5'])
     print("----------------------------------")
 

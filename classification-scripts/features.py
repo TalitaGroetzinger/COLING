@@ -5,7 +5,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction import DictVectorizer
 from nltk.tokenize import word_tokenize
 import nltk
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -60,7 +60,7 @@ def get_length_features(document, thresshold=15):
 
 def get_length_features_context(document, thresshold=150):
     length_doc = len(document)
-    if length_doc > 150:
+    if length_doc > 170:
         length_type = "long"
     else:
         length_type = "short"
@@ -71,11 +71,17 @@ def get_postags(tokens):
     '''
         Returns part-of-speech tags
     '''
-    #first_tokens = word_tokenize(tokens)
+    # use first_tokens for context with __REV__
     first_tokens = word_tokenize(tokens.replace("__REV___", ""))
-    #new_tokens = [token.strip("__REV__") for token in first_tokens]
-    # print(new_tokens)
     return [token + "_POS-"+tag for token, tag in nltk.pos_tag(first_tokens)]
+
+
+def tokenize(tokens):
+    """
+        Can be used to not use POS tags in the context. 
+    """
+    tokens = word_tokenize(tokens.replace("__REV___", ""))
+    return tokens
 
 
 def pos_tags_and_length(document, thresshold=150):

@@ -12,7 +12,7 @@ import numpy as np
 import gensim
 import pickle
 import nltk
-from features import get_length_features, get_postags, pos_tags_and_length, get_length_features_context, coherence_vec, CoherenceFeatures, PreprocessFeatures
+from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, CoherenceFeatures, PreprocessFeatures
 
 
 def mark_cases(context, matches, source=True):
@@ -68,17 +68,38 @@ def get_docs_labels_context(list_of_wikihow_instances):
     return X, Y
 
 
-def preprocess_data(train, dev, test):
-    with open(train, 'r') as json_in_train:
-        train_open = json.load(json_in_train)
-    with open(dev, 'r') as json_in_dev:
-        dev_open = json.load(json_in_dev)
-    with open(test, 'r') as json_in_test:
-        test_open = json.load(json_in_test)
+def preprocess_data(train_diff, dev_diff, test_diff, train_same, dev_same, test_same):
+    with open(train_diff, 'r') as json_in_train:
+        train_open_diff = json.load(json_in_train)
+    with open(dev_diff, 'r') as json_in_dev:
+        dev_open_diff = json.load(json_in_dev)
+    with open(test_diff, 'r') as json_in_test:
+        test_open_diff = json.load(json_in_test)
 
-    Xtrain, Ytrain = get_docs_labels_context(train_open)
-    Xdev, Ydev = get_docs_labels_context(dev_open)
-    Xtest, Ytest = get_docs_labels_context(test_open)
+    with open(train_same, 'r') as json_in_train_same:
+        train_open_same = json.load(json_in_train_same)
+
+    with open(dev_same, 'r') as json_in_dev_same:
+        dev_open_same = json.load(json_in_dev_same)
+
+    with open(test_same, 'r') as json_in_test_same:
+        test_open_same = json.load(json_in_test_same)
+
+    Xtrain_diff, Ytrain_diff = get_docs_labels_context(train_open_diff)
+    Xdev_diff, Ydev_diff = get_docs_labels_context(dev_open_diff)
+    Xtest_diff, Ytest_diff = get_docs_labels_context(test_open_diff)
+
+    Xtrain_same, Ytrain_same = get_docs_labels_context(train_open_same)
+    Xdev_same, Ydev_same = get_docs_labels_context(dev_open_same)
+    Xtest_same, Ytest_same = get_docs_labels_context(test_open_same)
+
+    Xtrain = Xtrain_diff + Xtrain_same
+    Ytrain = Ytrain_diff + Ytrain_same
+    Xdev = Xdev_diff + Xdev_same
+    Ydev = Ydev_diff + Ydev_same
+    Xtest = Xtest_diff + Xtest_same
+    Ytest = Ytest_diff + Ytest_same
+
     return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
 
 
@@ -89,8 +110,8 @@ def join_data(x):
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # hier moet de dict van Xtrain dus in
     # fit to countvec
-    count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 1),
-                                tokenizer=get_postags, preprocessor=join_data)
+    count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
+                                token_pattern='[^ ]+', preprocessor=join_data)
     """
     Xtrain_fitted = count_vec.fit_transform(Xtrain)
     Xdev_fitted = count_vec.transform(Xdev)
@@ -144,10 +165,11 @@ def get_paths(different_nouns=True):
 
 def main():
     # get different nouns
-    train, dev, test = get_paths(True)
+    train_diff, dev_diff, test_diff = get_paths(True)
+    train_same, dev_same, test_same = get_paths(False)
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = preprocess_data(
-        train, dev, test)
+        train_diff, dev_diff, test_diff, train_same, dev_same, test_same)
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
