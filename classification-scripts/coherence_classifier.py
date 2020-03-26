@@ -82,20 +82,23 @@ def preprocess_data(train, dev, test):
     return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
 
 
+def join_data(x):
+    return ' '.join(x)
+
+
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # hier moet de dict van Xtrain dus in
     # fit to countvec
     count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 1),
-                                tokenizer=pos_tags_and_length, preprocessor=word_tokenize)
+                                tokenizer=get_postags, preprocessor=join_data)
     """
     Xtrain_fitted = count_vec.fit_transform(Xtrain)
     Xdev_fitted = count_vec.transform(Xdev)
     """
     print("fit data ... ")
-    vec = Pipeline(
+    vec = FeatureUnion(
         [
-            ('feat', coherence_vec), ('Preprocessor',
-                                      PreprocessFeatures()), ('vec', count_vec)
+            ('feat', coherence_vec), ('vec', count_vec)
         ]
     )
 
@@ -123,7 +126,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
             list_of_bad_predictions.append(i)
     accuracy = (positive/(positive+negative))
     print("Accuracy: {0}".format(accuracy))
-    get_most_informative_features(classifier, coherence_vec)
+    get_most_informative_features(classifier, vec)
     return list_of_good_predictions, list_of_bad_predictions
 
 

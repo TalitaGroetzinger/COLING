@@ -71,7 +71,11 @@ def get_postags(tokens):
     '''
         Returns part-of-speech tags
     '''
-    return [token + "_POS-"+tag for token, tag in nltk.pos_tag(tokens)]
+    #first_tokens = word_tokenize(tokens)
+    first_tokens = word_tokenize(tokens.replace("__REV___", ""))
+    #new_tokens = [token.strip("__REV__") for token in first_tokens]
+    # print(new_tokens)
+    return [token + "_POS-"+tag for token, tag in nltk.pos_tag(first_tokens)]
 
 
 def pos_tags_and_length(document, thresshold=150):
@@ -94,7 +98,6 @@ def compute_coherence(doc):
 
     freq = Counter()
     d = {}
-    print("DOC")
     for word in doc:
         if '__REV__' in word:
             freq[word.lower()] += 1
