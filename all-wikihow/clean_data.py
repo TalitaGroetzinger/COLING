@@ -17,7 +17,7 @@ def clean_dict(list_of_wikihow_instances):
         # rename source_tagged
         elem['Source_Tagged'] = elem['Source_tagged']
         del elem['Source_tagged']
-        elem.append(filtered_data)
+        filtered_data.append(elem)
     bar.finish()
     try:
         assert len(filtered_data) == len(list_of_wikihow_instances)
