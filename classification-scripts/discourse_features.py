@@ -51,8 +51,12 @@ def main():
 
     new = add_grams(d, discourse_markers_list_uniq)
 
+    filtered = {}
+    for key, value in new.items():
+        filtered[key] = clean_list(value)
+
     with open('../data/discourse_markers.pickle', 'wb') as pickle_in:
-        pickle.dump(new, pickle_in)
+        pickle.dump(filtered, pickle_in)
 
 
 main()
