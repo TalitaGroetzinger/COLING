@@ -1,3 +1,6 @@
+# This script can be used to run the bag-of-words classifier.
+# Use get_docs_labels_context() to include the context in the classification procedure.
+
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
