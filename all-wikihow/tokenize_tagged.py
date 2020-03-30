@@ -1,8 +1,8 @@
 import json
-from progess.bar import Bar
+from progress.bar import Bar
 
-#path = './Wikihow_tokenized_v5_cleaned_splits.json'
-path = './subset-splits.json'
+path = '../data/Wikihow_tokenized_v5_cleaned_splits.json'
+#path = '../data/subset-splits.json'
 with open(path, 'r') as json_in:
     content = json.load(json_in)
 
@@ -19,6 +19,6 @@ for wikihow_instance in content:
     new.append(wikihow_instance)
 bar.finish()
 
-filename_to_write = "subset-splits-tokenized"
+filename_to_write = "../data/Wikihow_tokenized_v5_cleaned_splits_tokens_only.json"
 with open(filename_to_write, 'w') as json_out:
     json.dump(new, json_out)
