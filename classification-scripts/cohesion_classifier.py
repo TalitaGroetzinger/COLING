@@ -12,7 +12,7 @@ import numpy as np
 import gensim
 import pickle
 import nltk
-from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, discourse_vec, lrec_vec
+from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, discourse_vec, lrec_vec, lexical_complexity_vec
 
 
 def mark_cases(context, matches, source=True):
@@ -48,6 +48,11 @@ def get_most_informative_features(classifier, vec, top_features=10):
         vec.get_feature_names(), neg_class_prob_sorted[:top_features]))
     print("Target: ", np.take(
         vec.get_feature_names(), pos_class_prob_sorted[:top_features]))
+
+
+def join_data_match(x):
+    x_new = ' '.join(x)
+    return x_new.replace('__REV__', '')
 
 
 def join_data(x):
@@ -114,10 +119,14 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
 
         else:
             print("use sentence-level")
-            source_line = ' '.join(
-                [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
-            target_line = ' '.join(
-                [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
+            # source_line = ' '.join(
+            #    [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
+            # target_line = ' '.join(
+            #    [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
+            target_line = [pair[0]
+                           for pair in wikihow_instance['Target_Line_Tagged']]
+            source_line = [pair[0]
+                           for pair in wikihow_instance['Source_Line_Tagged']]
             X.append(source_line)
             Y.append(0)
             X.append(target_line)
@@ -145,18 +154,13 @@ def get_data(path_to_train, path_to_dev, path_to_test, context_value='context'):
 
 
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
-    # hier moet de dict van Xtrain dus in
-    # fit to countvec
+    # don't forget to remove the __REV__ tags in the from coherence_vec
     count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
                                 token_pattern='[^ ]+', preprocessor=join_data)
-    """
-    Xtrain_fitted = count_vec.fit_transform(Xtrain)
-    Xdev_fitted = count_vec.transform(Xdev)
-    """
     print("fit data ... ")
     vec = FeatureUnion(
         [
-            ('feat', discourse_vec), ('vec', count_vec)
+            ('feat', lexical_complexity_vec), ('vec', count_vec)
         ]
     )
 
@@ -191,8 +195,6 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
 def select_vectorizer(vec='discourse'):
     best_count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
                                      token_pattern='[^ ]+', preprocessor=join_data)
-    length_features = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
-                                      token_pattern='[^ ]+', preprocessor=join_data)
     if vec == 'discourse':
         vec = FeatureUnion(
             [
@@ -215,10 +217,11 @@ def main():
     # use_all=false to get path_to_train_diff, path_to_dev_diff, path_to_test_diff, path_to_train_same, path_to_dev_same, path_to_test_same
     train, dev, test = get_paths(use_all=True)
 
-    Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = get_data(train, dev, test)
+    Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = get_data(
+        train, dev, test, context_value='sentences')
 
-    # list_of_good_predictions, list_of_bad_predictions = train_classifier(
-    #    Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
+    list_of_good_predictions, list_of_bad_predictions = train_classifier(
+        Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
 
 
 main()

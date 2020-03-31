@@ -15,26 +15,6 @@ with open(path_to_markers, 'rb') as pickle_in:
     markers = pickle.load(pickle_in)
 
 
-def check_word_in_context(context, matches):
-    # count all the words in the context and make a dict representation of it
-    word_frequency = Counter()
-    ppdb_matches = [elem[0][0] for elem in matches]
-
-    tokenized = word_tokenize(context)
-    for token in tokenized:
-        token = token.lower()
-        word_frequency[token] += 1
-    d = {}
-    for ppdb_match in ppdb_matches:
-        if ppdb_match.lower() in dict(word_frequency).keys():
-            count_for_match = word_frequency[ppdb_match]
-            if count_for_match > 1:
-                d[ppdb_match] = True
-            else:
-                d[ppdb_match] = False
-    return d
-
-
 class MeanEmbeddingVectorizer(object):
     def __init__(self, word2vec):
         self.word2vec = word2vec
@@ -238,5 +218,37 @@ class DiscourseFeatures(BaseEstimator, TransformerMixin):
 discourse_vec = Pipeline(
     [
         ('feat', DiscourseFeatures()), ('vec', DictVectorizer())
+    ]
+)
+
+
+class LexicalComplexity(BaseEstimator, TransformerMixin):
+
+    def fit(self, x, y=None):
+        return self
+
+    def _get_features(self, doc):
+        lexical_score = type_token_ratio(doc)
+        return lexical_score
+
+    def transform(self, raw_documents):
+        return [self._get_features(doc) for doc in raw_documents]
+
+
+def type_token_ratio(document):
+    """
+        Input: tokenize document 
+        Returns: the type-token-ratio for a document.
+    """
+    all_tokens = [token for token in document]
+    num_of_tokens = len(all_tokens)
+    unique_tokens = list(set(all_tokens))
+    num_of_unique_tokens = len(unique_tokens)
+    return {"Type-token-ratio": num_of_unique_tokens/num_of_tokens}
+
+
+lexical_complexity_vec = Pipeline(
+    [
+        ('feat', LexicalComplexity()), ('vec', DictVectorizer())
     ]
 )
