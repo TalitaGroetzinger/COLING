@@ -45,19 +45,36 @@ def join_tokens(list_of_wikihow_instances):
     return new
 
 
+def make_splits(list_of_wikihow_instances):
+    bar = Bar('Processing ', max=len(list_of_wikihow_instances))
+    dev = []
+    test = []
+    train = []
+    for wikihow_instance in list_of_wikihow_instances:
+        bar.next()
+        if wikihow_instance['Loc_in_splits'] == 'DEV':
+            dev.append(wikihow_instance)
+        elif wikihow_instance['Loc_in_splits'] == 'TEST':
+            test.append(wikihow_instance)
+        else:
+            train.append(wikihow_instance)
+    bar.finish()
+    return dev, test, train
+
+
 def main():
-    path_to_file = '../wikihowtools/data/Wikihow_tokenized_v5_cleaned.json'
+    path_to_file = '../data/Wikihow_tokenized_v5_cleaned_splits.json'
     print("load data .... ")
     with open(path_to_file, 'r') as json_in:
         content = json.load(json_in)
 
     # filter the data
     print("clean data")
-    #filtered_data = clean_dict(content)
     filtered_data = join_tokens(content)
 
     # write to new file
-    with open("../wikihowtools/data/Wikihow_tokenized_v5_cleaned_tokens_only.json", 'w') as json_out:
+    print("write to new file ../wikihowtools/data/Wikihow_tokenized_v5_cleaned_splits_tokens_only.json")
+    with open("../wikihowtools/data/Wikihow_tokenized_v5_cleaned_splits_tokens_only.json", 'w') as json_out:
         json.dump(filtered_data, json_out)
 
 
