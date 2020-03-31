@@ -97,8 +97,12 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
     for wikihow_instance in list_of_wikihow_instances:
         if use_context == 'context':
             print("use context level")
-            source_context = wikihow_instance['Source_Context_5_Processed']
-            target_context = wikihow_instance['Target_Context_5_Processed']
+            #source_context = wikihow_instance['Source_Context_5_Processed']
+            #target_context = wikihow_instance['Target_Context_5_Processed']
+            source_context = word_tokenize(
+                wikihow_instance['Source_Context_5_Processed'])
+            target_context = word_tokenize(
+                wikihow_instance['Target_Context_5_Processed'])
             X.append(source_context)
             Y.append(0)
             X.append(target_context)
@@ -160,7 +164,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     print("fit data ... ")
     vec = FeatureUnion(
         [
-            ('feat', lexical_complexity_vec), ('vec', count_vec)
+            ('feat', discourse_vec), ('vec', count_vec)
         ]
     )
 
