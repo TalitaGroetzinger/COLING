@@ -17,18 +17,37 @@ def write_to_json(file_name, list_to_dump):
     with open(file_name, 'w') as json_out:
         json.dump(list_to_dump, json_out)
 
+# different-noun modifications -> wikihow_instance['Source_tagged']
+# same-noun modificatioss -> 'Source_Line_Tagged'
 
-def merge_lists(path_to_list1, path_to_list2):
-    with open(path_to_list1, 'r') as json_in1:
-        list1 = json.load(json_in1)
-    with open(path_to_list2, 'r') as json_in2:
-        list2 = json.load(json_in2)
-    print(len(list1+list2))
-    return list1 + list2
+
+def rename_keys(list_of_wikihow_instances):
+    renamed_instance = []
+    for wikihow_instance in list_of_wikihow_instances:
+        wikihow_instance['Source_Line_Tagged'] = wikihow_instance['Source_tagged']
+        wikihow_instance['Target_Line_Tagged'] = wikihow_instance['Target_Tagged']
+        del wikihow_instance['Source_tagged']
+        del wikihow_instance['Target_Tagged']
+        renamed_instance.append(wikihow_instance)
+    return renamed_instance
+
+
+def merge_lists(list_with_diff_nouns, list_with_same_nouns):
+    with open(list_with_diff_nouns, 'r') as json_in1:
+        diff_nouns = json.load(json_in1)
+
+    with open(list_with_same_nouns, 'r') as json_in2:
+        same_nouns = json.load(json_in2)
+    print(len(diff_nouns+same_nouns))
+
+    diff_nouns_new = rename_keys(diff_nouns)
+
+    return diff_nouns_new + same_nouns
 
 
 def main():
     train_diff, dev_diff, test_diff = get_paths(True)
+
     train_same, dev_same, test_same = get_paths(False)
 
     all_train = merge_lists(train_diff, train_same)
