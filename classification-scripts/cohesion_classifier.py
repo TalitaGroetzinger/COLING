@@ -192,22 +192,42 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     return list_of_good_predictions, list_of_bad_predictions
 
 
-def get_paths(different_nouns=True):
-    if different_nouns:
-        path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
-        path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'
-        path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'
+def get_paths(use_all=True):
+    if use_all:
+        path_to_dir = '../classification-scripts/noun-modifications'
+        path_to_train = "{0}/noun-modifications-train-5-new.json".format(
+            path_to_dir)
+        path_to_dev = "{0}/noun-modifications-dev-5-new.json".format(
+            path_to_dir)
+        path_to_test = "{0}/noun-modifications-test-5-new.json".format(
+            path_to_dir)
+
+        return path_to_train, path_to_dev, path_to_test
     else:
-        path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
-        path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'
-        path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'
-    return path_to_train, path_to_dev, path_to_test
+        path_to_dir_diff = '../classification-scripts/different-noun-modifications'
+        path_to_train_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TRAIN-5-v3.JSON'.format(
+            path_to_dir_diff)
+        path_to_dev_diff = '{0}/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-v3.JSON'.format(
+            path_to_dir_diff)
+        path_to_test_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TEST-5-v3.JSON'.format(
+            path_to_dir_diff)
+
+        # get same-noun modifications
+        path_to_dir_same = '../classification-scripts/same-noun-modifications'
+        path_to_train_same = '{0}/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
+            path_to_dir_same)
+        path_to_dev_same = '{0}/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'.format(
+            path_to_dir_same)
+        path_to_test_same = '{0}/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'.format(
+            path_to_dir_same)
+
+        return path_to_train_diff, path_to_dev_diff, path_to_test_diff, path_to_train_same, path_to_dev_same, path_to_test_same
 
 
 def main():
     # get different nouns
-    train_diff, dev_diff, test_diff = get_paths(True)
-    train_same, dev_same, test_same = get_paths(False)
+    # use_all=false to get path_to_train_diff, path_to_dev_diff, path_to_test_diff, path_to_train_same, path_to_dev_same, path_to_test_same
+    train, dev, test = get_paths(use_all=True)
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = preprocess_data(
         train_diff, dev_diff, test_diff, train_same, dev_same, test_same, use_context=True)
