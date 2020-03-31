@@ -52,32 +52,23 @@ def get_most_informative_features(classifier, vec, top_features=10):
 
 # let op dat er bij deze functie ook gebruik wordt gemaakt van de matches
 # voor context
-def get_docs_labels(list_of_wikihow_instances, context=False, matches=False, diff_noun_file=True):
+def get_docs_labels(list_of_wikihow_instances, context=False, diff_noun_file=True):
     X = []
     Y = []
     for wikihow_instance in list_of_wikihow_instances:
         if context:
             print("use context ... ")
-            source_context = wikihow_instance['Source_Context_5_Processed']
-            target_context = wikihow_instance['Target_Context_5_Processed']
-            matches = wikihow_instance['PPDB_Matches']
-
-            if matches:
-                print("use ppdb matches")
-                new_source = mark_cases(source_context, matches, source=True)
-                new_target = mark_cases(target_context, matches, source=False)
-
-                X.append(new_source)
-                Y.append(0)
-                X.append(new_target)
-                Y.append(1)
-            else:
-                X.append(source_context)
-                Y.append(0)
-                X.append(target_context)
-                Y.append(1)
+            source_context_first = wikihow_instance['Source_Context_5_Processed']
+            source_context = word_tokenize(source_context_first)
+            target_context_first = wikihow_instance['Target_Context_5_Processed']
+            target_context = word_tokenize(target_context_first)
+            #matches = wikihow_instance['PPDB_Matches']
+            X.append(source_context)
+            Y.append(0)
+            X.append(target_context)
+            Y.append(1)
         else:
-            print("do not use coontext")
+            print("do not use context")
             if diff_noun_file:
                 print("use different noun modifications")
                 source_tokenized = [pair[0]
@@ -116,32 +107,32 @@ def preprocess_data(train_diff, dev_diff, test_diff, train_same, dev_same, test_
     # list_of_wikihow_instances, context=False, use_matches=False, diff_noun_file=True
     if use_context:
         Xtrain_diff, Ytrain_diff = get_docs_labels(
-            train_open_diff, context=True, matches=True)
+            train_open_diff, context=True)
         Xdev_diff, Ydev_diff = get_docs_labels(
-            dev_open_diff, context=True, matches=True)
+            dev_open_diff, context=True)
         Xtest_diff, Ytest_diff = get_docs_labels(
-            test_open_diff, context=True, matches=True)
+            test_open_diff, context=True)
 
         Xtrain_same, Ytrain_same = get_docs_labels(
-            train_open_same, context=True, matches=True)
+            train_open_same, context=True)
         Xdev_same, Ydev_same = get_docs_labels(
-            dev_open_same, context=True, matches=True)
+            dev_open_same, context=True)
         Xtest_same, Ytest_same = get_docs_labels(
-            test_open_same, context=True, matches=True)
+            test_open_same, context=True)
     else:
         Xtrain_diff, Ytrain_diff = get_docs_labels(
-            train_open_diff, context=False, matches=False, diff_noun_file=True)
+            train_open_diff, context=False, diff_noun_file=True)
         Xdev_diff, Ydev_diff = get_docs_labels(
-            dev_open_diff, context=False, matches=False, diff_noun_file=True)
+            dev_open_diff, context=False, diff_noun_file=True)
         Xtest_diff, Ytest_diff = get_docs_labels(
-            test_open_diff, context=False, matches=False, diff_noun_file=True)
+            test_open_diff, context=False, diff_noun_file=True)
 
         Xtrain_same, Ytrain_same = get_docs_labels(
-            train_open_same, context=False, matches=False, diff_noun_file=False)
+            train_open_same, context=False, diff_noun_file=False)
         Xdev_same, Ydev_same = get_docs_labels(
-            dev_open_same, context=False, matches=False, diff_noun_file=False)
+            dev_open_same, context=False, diff_noun_file=False)
         Xtest_same, Ytest_same = get_docs_labels(
-            test_open_same, context=False, matches=False, diff_noun_file=False)
+            test_open_same, context=False, diff_noun_file=False)
 
     Xtrain = Xtrain_diff + Xtrain_same
     Ytrain = Ytrain_diff + Ytrain_same
@@ -219,7 +210,7 @@ def main():
     train_same, dev_same, test_same = get_paths(False)
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = preprocess_data(
-        train_diff, dev_diff, test_diff, train_same, dev_same, test_same)
+        train_diff, dev_diff, test_diff, train_same, dev_same, test_same, use_context=True)
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
