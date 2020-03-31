@@ -12,7 +12,7 @@ import numpy as np
 import gensim
 import pickle
 import nltk
-from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, CoherenceFeatures, PreprocessFeatures
+from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, discourse_vec
 
 
 def mark_cases(context, matches, source=True):
@@ -50,25 +50,53 @@ def get_most_informative_features(classifier, vec, top_features=10):
         vec.get_feature_names(), pos_class_prob_sorted[:top_features]))
 
 
-def get_docs_labels_context(list_of_wikihow_instances):
+# let op dat er bij deze functie ook gebruik wordt gemaakt van de matches
+# voor context
+def get_docs_labels(list_of_wikihow_instances, context=False, matches=False, diff_noun_file=True):
     X = []
     Y = []
     for wikihow_instance in list_of_wikihow_instances:
-        source_context = wikihow_instance['Source_Context_5_Processed']
-        target_context = wikihow_instance['Target_Context_5_Processed']
-        matches = wikihow_instance['PPDB_Matches']
+        if context:
+            print("use context ... ")
+            source_context = wikihow_instance['Source_Context_5_Processed']
+            target_context = wikihow_instance['Target_Context_5_Processed']
+            matches = wikihow_instance['PPDB_Matches']
 
-        new_source = mark_cases(source_context, matches, source=True)
-        new_target = mark_cases(target_context, matches, source=False)
+            if matches:
+                print("use ppdb matches")
+                new_source = mark_cases(source_context, matches, source=True)
+                new_target = mark_cases(target_context, matches, source=False)
 
-        X.append(new_source)
-        Y.append(0)
-        X.append(new_target)
-        Y.append(1)
+                X.append(new_source)
+                Y.append(0)
+                X.append(new_target)
+                Y.append(1)
+            else:
+                X.append(source_context)
+                Y.append(0)
+                X.append(target_context)
+                Y.append(1)
+        else:
+            print("do not use coontext")
+            if diff_noun_file:
+                print("use different noun modifications")
+                source_tokenized = [pair[0]
+                                    for pair in wikihow_instance['Source_tagged']]
+                target_tokenized = [pair[0]
+                                    for pair in wikihow_instance['Target_Tagged']]
+            else:
+                source_tokenized = [pair[0]
+                                    for pair in wikihow_instance['Source_Line_Tagged']]
+                target_tokenized = [pair[0]
+                                    for pair in wikihow_instance['Target_Line_Tagged']]
+            X.append(source_tokenized)
+            Y.append(0)
+            X.append(target_tokenized)
+            Y.append(1)
     return X, Y
 
 
-def preprocess_data(train_diff, dev_diff, test_diff, train_same, dev_same, test_same):
+def preprocess_data(train_diff, dev_diff, test_diff, train_same, dev_same, test_same, use_context=False):
     with open(train_diff, 'r') as json_in_train:
         train_open_diff = json.load(json_in_train)
     with open(dev_diff, 'r') as json_in_dev:
@@ -85,13 +113,35 @@ def preprocess_data(train_diff, dev_diff, test_diff, train_same, dev_same, test_
     with open(test_same, 'r') as json_in_test_same:
         test_open_same = json.load(json_in_test_same)
 
-    Xtrain_diff, Ytrain_diff = get_docs_labels_context(train_open_diff)
-    Xdev_diff, Ydev_diff = get_docs_labels_context(dev_open_diff)
-    Xtest_diff, Ytest_diff = get_docs_labels_context(test_open_diff)
+    # list_of_wikihow_instances, context=False, use_matches=False, diff_noun_file=True
+    if use_context:
+        Xtrain_diff, Ytrain_diff = get_docs_labels(
+            train_open_diff, context=True, matches=True)
+        Xdev_diff, Ydev_diff = get_docs_labels(
+            dev_open_diff, context=True, matches=True)
+        Xtest_diff, Ytest_diff = get_docs_labels(
+            test_open_diff, context=True, matches=True)
 
-    Xtrain_same, Ytrain_same = get_docs_labels_context(train_open_same)
-    Xdev_same, Ydev_same = get_docs_labels_context(dev_open_same)
-    Xtest_same, Ytest_same = get_docs_labels_context(test_open_same)
+        Xtrain_same, Ytrain_same = get_docs_labels(
+            train_open_same, context=True, matches=True)
+        Xdev_same, Ydev_same = get_docs_labels(
+            dev_open_same, context=True, matches=True)
+        Xtest_same, Ytest_same = get_docs_labels(
+            test_open_same, context=True, matches=True)
+    else:
+        Xtrain_diff, Ytrain_diff = get_docs_labels(
+            train_open_diff, context=False, matches=False, diff_noun_file=True)
+        Xdev_diff, Ydev_diff = get_docs_labels(
+            dev_open_diff, context=False, matches=False, diff_noun_file=True)
+        Xtest_diff, Ytest_diff = get_docs_labels(
+            test_open_diff, context=False, matches=False, diff_noun_file=True)
+
+        Xtrain_same, Ytrain_same = get_docs_labels(
+            train_open_same, context=False, matches=False, diff_noun_file=False)
+        Xdev_same, Ydev_same = get_docs_labels(
+            dev_open_same, context=False, matches=False, diff_noun_file=False)
+        Xtest_same, Ytest_same = get_docs_labels(
+            test_open_same, context=False, matches=False, diff_noun_file=False)
 
     Xtrain = Xtrain_diff + Xtrain_same
     Ytrain = Ytrain_diff + Ytrain_same
@@ -119,7 +169,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     print("fit data ... ")
     vec = FeatureUnion(
         [
-            ('feat', coherence_vec), ('vec', count_vec)
+            ('feat', discourse_vec), ('vec', count_vec)
         ]
     )
 
@@ -153,13 +203,13 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
 
 def get_paths(different_nouns=True):
     if different_nouns:
-        path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5-v3.JSON'
-        path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-v3.JSON'
-        path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-v3.JSON'
+        path_to_train = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
+        path_to_dev = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'
+        path_to_test = './different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'
     else:
-        path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-v3.JSON'
-        path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-v3.JSON'
-        path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-v3.JSON'
+        path_to_train = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
+        path_to_dev = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'
+        path_to_test = './same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'
     return path_to_train, path_to_dev, path_to_test
 
 
