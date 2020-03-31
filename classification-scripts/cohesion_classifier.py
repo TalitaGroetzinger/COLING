@@ -12,7 +12,7 @@ import numpy as np
 import gensim
 import pickle
 import nltk
-from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, discourse_vec
+from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, discourse_vec, lrec_vec
 
 
 def mark_cases(context, matches, source=True):
@@ -186,6 +186,28 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     print("Accuracy: {0}".format(accuracy))
     get_most_informative_features(classifier, vec)
     return list_of_good_predictions, list_of_bad_predictions
+
+
+def select_vectorizer(vec='discourse'):
+    best_count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
+                                     token_pattern='[^ ]+', preprocessor=join_data)
+    length_features = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
+                                      token_pattern='[^ ]+', preprocessor=join_data)
+    if vec == 'discourse':
+        vec = FeatureUnion(
+            [
+                ('feat', discourse_vec), ('vec', best_count_vec)
+            ]
+        )
+    elif vec == 'word-overlap':
+        vec = FeatureUnion(
+            [
+                ('feat', coherence_vec), ('vec', best_count_vec)
+            ]
+        )
+    else:
+        vec = lrec_vec
+    return vec
 
 
 def main():
