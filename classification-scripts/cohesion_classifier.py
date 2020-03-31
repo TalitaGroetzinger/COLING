@@ -164,7 +164,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     print("fit data ... ")
     vec = FeatureUnion(
         [
-            ('feat', discourse_vec), ('vec', count_vec)
+            ('feat', lexical_complexity_vec), ('vec', count_vec)
         ]
     )
 
