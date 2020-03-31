@@ -27,18 +27,34 @@ def clean_dict(list_of_wikihow_instances):
     return filtered_data
 
 
+def join_tokens(list_of_wikihow_instances):
+    new = []
+    bar = Bar()
+    for wikihow_instance in list_of_wikihow_instances:
+        bar.next()
+        wikihow_instance['Source_Line'] = ' '.join(
+            wikihow_instance['Source_Tagged'])
+        wikihow_instance['Target_Line'] = ' '.join(
+            wikihow_instance['Target_Tagged'])
+        del wikihow_instance['Source_Tagged']
+        del wikihow_instance['Target_Tagged']
+    bar.finish()
+    return new
+
+
 def main():
-    path_to_file = '../wikihowtools/data/Wikihow_tokenized_v5.json'
+    path_to_file = '../wikihowtools/data/Wikihow_tokenized_v5_cleaned.json'
     print("load data .... ")
     with open(path_to_file, 'r') as json_in:
         content = json.load(json_in)
 
     # filter the data
-    print("clean data ")
-    filtered_data = clean_dict(content)
+    print("clean data")
+    #filtered_data = clean_dict(content)
+    filtered_data = join_tokens(content)
 
     # write to new file
-    with open("../wikihowtools/data/Wikihow_tokenized_v5_cleaned.json", 'w') as json_out:
+    with open("../wikihowtools/data/Wikihow_tokenized_v5_cleaned_tokens_only.json", 'w') as json_out:
         json.dump(filtered_data, json_out)
 
 
