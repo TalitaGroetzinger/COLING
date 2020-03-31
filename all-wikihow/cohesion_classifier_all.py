@@ -13,6 +13,7 @@ import gensim
 import pickle
 import nltk
 from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, discourse_vec, lrec_vec, lexical_complexity_vec
+import time
 
 
 def mark_cases(context, matches, source=True):
@@ -61,13 +62,16 @@ def join_data(x):
 
 def get_paths(use_all=True):
     if use_all:
-        path_to_dir = '../classification-scripts/noun-modifications'
-        path_to_train = "{0}/noun-modifications-train-5-new.json".format(
-            path_to_dir)
-        path_to_dev = "{0}/noun-modifications-dev-5-new.json".format(
-            path_to_dir)
-        path_to_test = "{0}/noun-modifications-test-5-new.json".format(
-            path_to_dir)
+        # path_to_dir = '../classification-scripts/noun-modifications'
+        # path_to_train = "{0}/noun-modifications-train-5-new.json".format(
+        #    path_to_dir)
+        # path_to_dev = "{0}/noun-modifications-dev-5-new.json".format(
+        #    path_to_dir)
+        # path_to_test = "{0}/noun-modifications-test-5-new.json".format(
+        #    path_to_dir)
+        path_to_train = './wikihow-train.json'
+        path_to_test = './wikihow-test.json'
+        path_to_dev = './wikihow-dev.json'
 
         return path_to_train, path_to_dev, path_to_test
     else:
@@ -94,11 +98,11 @@ def get_paths(use_all=True):
 def get_xy(list_of_wikihow_instances, use_context='context'):
     X = []
     Y = []
-    for wikihow_instance in list_of_wikihow_instances:
+    for wikihow_instance in list_of_wikihow_instances[0:2000]:
         if use_context == 'context':
             print("use context level")
-            #source_context = wikihow_instance['Source_Context_5_Processed']
-            #target_context = wikihow_instance['Target_Context_5_Processed']
+            # source_context = wikihow_instance['Source_Context_5_Processed']
+            # target_context = wikihow_instance['Target_Context_5_Processed']
             source_context = word_tokenize(
                 wikihow_instance['Source_Context_5_Processed'])
             target_context = word_tokenize(
@@ -127,10 +131,12 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
             #    [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
             # target_line = ' '.join(
             #    [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
-            target_line = [pair[0]
-                           for pair in wikihow_instance['Target_Line_Tagged']]
-            source_line = [pair[0]
-                           for pair in wikihow_instance['Source_Line_Tagged']]
+            # target_line = [pair[0]
+            #               for pair in wikihow_instance['Target_Line_Tagged']]
+            # source_line = [pair[0]
+            #               for pair in wikihow_instance['Source_Line_Tagged']]
+            source_line = wikihow_instance['Source_Line']
+            target_line = wikihow_instance['Target_Line']
             X.append(source_line)
             Y.append(0)
             X.append(target_line)
@@ -162,13 +168,12 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
                                 token_pattern='[^ ]+', preprocessor=join_data)
     print("fit data ... ")
-    # vec = FeatureUnion(
-    #    [
-    #        ('feat', lexical_complexity_vec), ('vec', count_vec)
-    #    ]
-    # )
+    vec = FeatureUnion(
+        [
+            ('feat', discourse_vec), ('vec', count_vec)
+        ]
+    )
 
-    vec = lrec_vec
     Xtrain_fitted = vec.fit_transform(Xtrain)
     Xdev_fitted = vec.transform(Xdev)
     # ------------------------------------------------
@@ -193,7 +198,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
             list_of_bad_predictions.append(i)
     accuracy = (positive/(positive+negative))
     print("Accuracy: {0}".format(accuracy))
-    get_most_informative_features(classifier, vec)
+    #get_most_informative_features(classifier, vec)
     return list_of_good_predictions, list_of_bad_predictions
 
 
@@ -220,6 +225,9 @@ def select_vectorizer(vec='discourse'):
 def main():
     # get different nouns
     # use_all=false to get path_to_train_diff, path_to_dev_diff, path_to_test_diff, path_to_train_same, path_to_dev_same, path_to_test_same
+
+    start = time.time()
+
     train, dev, test = get_paths(use_all=True)
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = get_data(
@@ -227,6 +235,8 @@ def main():
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
+
+    print(time.time()-start)
 
 
 main()

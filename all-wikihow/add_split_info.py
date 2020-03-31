@@ -31,7 +31,7 @@ def check_filenames_in_json(json_file, list_of_dev_files, list_of_test_files):
             wikihow_instance['Loc_in_splits'] = 'TRAIN'
         collection.append(wikihow_instance)
         counter[wikihow_instance['Loc_in_splits']] += 1
-    #del wikihow_instance['All_Versions']
+    # del wikihow_instance['All_Versions']
     bar.finish()
     try:
         assert len(collection) == len(json_file)
@@ -41,21 +41,52 @@ def check_filenames_in_json(json_file, list_of_dev_files, list_of_test_files):
     return collection
 
 
+def make_splits(list_of_wikihow_instances):
+    bar = Bar('Processing ', max=len(list_of_wikihow_instances))
+    dev = []
+    test = []
+    train = []
+    for wikihow_instance in list_of_wikihow_instances:
+        bar.next()
+        if wikihow_instance['Loc_in_splits'] == 'DEV':
+            dev.append(wikihow_instance)
+        elif wikihow_instance['Loc_in_splits'] == 'TEST':
+            test.append(wikihow_instance)
+        else:
+            train.append(wikihow_instance)
+    bar.finish()
+    return train, dev, test
+
+
 def main():
     list_of_dev_files = read_list_of_filenames(
         '../classification-scripts/scripts_from_server/wikihow_dev_files.txt')
     list_of_test_files = read_list_of_filenames(
         '../classification-scripts/scripts_from_server/wikihow_test_files.txt')
 
-    with open('../wikihowtools/data/Wikihow_tokenized_v5_cleaned.json', 'r') as json_in:
+    with open('../wikihowtools/data/Wikihow_tokenized_v5_cleaned_tokens_only.json', 'r') as json_in:
         list_of_wikihow_instances = json.load(json_in)
-    print(len(list_of_wikihow_instances))
 
-    collection = check_filenames_in_json(
+    print("add info in wikihow_instance ... ")
+    list_of_wikihow_instances_new = check_filenames_in_json(
         list_of_wikihow_instances, list_of_dev_files, list_of_test_files)
 
-    with open('./Wikihow_tokenized_v5_cleaned_splits.json', 'w') as json_out:
-        json.dump(collection, json_out)
+    print("split into different files .... ")
+    dev, test, train = make_splits(list_of_wikihow_instances_new)
+
+    print("Train instances: {0}, Perc: {1}".format(len(train),
+                                                   len(train)/len(list_of_wikihow_instances_new)))
+    print("Dev instances: {0}, Perc: {1}".format(len(dev), len(
+        dev)/len(list_of_wikihow_instances_new)))
+    print("Test instances: {0}, Perc: {1}".format(len(test), len(
+        test)/len(list_of_wikihow_instances_new)))
+
+    with open("wikihow-dev.json", 'w') as json_out:
+        json.dump(json_out, dev)
+    with open("wikihow-test.json", 'w') as json_out:
+        json.dump(json_out, test)
+    with open("wikihow-train.json", 'w') as json_out:
+        json.dump(json_out, train)
 
 
 main()
