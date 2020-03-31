@@ -218,7 +218,7 @@ def main():
     train, dev, test = get_paths(use_all=True)
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = get_data(
-        train, dev, test, context_value='sentences')
+        train, dev, test, context_value='context')
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
