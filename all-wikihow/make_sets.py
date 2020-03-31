@@ -3,13 +3,13 @@ import json
 
 def get_paths(different_nouns=True):
     if different_nouns:
-        path_to_train = '../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
-        path_to_dev = '../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'
-        path_to_test = '../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'
+        path_to_train = '../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TRAIN-5-v3.JSON'
+        path_to_dev = '../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-v3.JSON'
+        path_to_test = '../classification-scripts/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-TEST-5-v3.JSON'
     else:
-        path_to_train = '../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'
-        path_to_dev = '../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'
-        path_to_test = '../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'
+        path_to_train = '../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-v3.JSON'
+        path_to_dev = '../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-v3.JSON'
+        path_to_test = '../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-v3.JSON'
     return path_to_train, path_to_dev, path_to_test
 
 
@@ -57,13 +57,13 @@ def main():
     path_to_dir = '../classification-scripts/noun-modifications'
     print("merge train ... ")
     write_to_json(
-        "{0}/noun-modifications-train-5-new.json".format(path_to_dir), all_train)
+        "{0}/noun-modifications-train-5-v3.json".format(path_to_dir), all_train)
     print("Merge dev ..")
     write_to_json(
-        "{0}/noun-modifications-dev-5-new.json".format(path_to_dir), all_dev)
+        "{0}/noun-modifications-dev-5-v3.json".format(path_to_dir), all_dev)
     print("Merge test")
     write_to_json(
-        "{0}/noun-modifications-test-5-new.json".format(path_to_dir), all_test)
+        "{0}/noun-modifications-test-5-v3.json".format(path_to_dir), all_test)
 
 
 main()
