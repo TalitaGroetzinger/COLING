@@ -54,6 +54,38 @@ def join_data(x):
     return ' '.join(x)
 
 
+def get_paths(use_all=True):
+    if use_all:
+        path_to_dir = '../classification-scripts/noun-modifications'
+        path_to_train = "{0}/noun-modifications-train-5-new.json".format(
+            path_to_dir)
+        path_to_dev = "{0}/noun-modifications-dev-5-new.json".format(
+            path_to_dir)
+        path_to_test = "{0}/noun-modifications-test-5-new.json".format(
+            path_to_dir)
+
+        return path_to_train, path_to_dev, path_to_test
+    else:
+        path_to_dir_diff = '../classification-scripts/different-noun-modifications'
+        path_to_train_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
+            path_to_dir_diff)
+        path_to_dev_diff = '{0}/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'.format(
+            path_to_dir_diff)
+        path_to_test_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'.format(
+            path_to_dir_diff)
+
+        # get same-noun modifications
+        path_to_dir_same = '../classification-scripts/same-noun-modifications'
+        path_to_train_same = '{0}/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
+            path_to_dir_same)
+        path_to_dev_same = '{0}/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'.format(
+            path_to_dir_same)
+        path_to_test_same = '{0}/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'.format(
+            path_to_dir_same)
+
+        return path_to_train_diff, path_to_dev_diff, path_to_test_diff, path_to_train_same, path_to_dev_same, path_to_test_same
+
+
 def get_xy(list_of_wikihow_instances, use_context='context'):
     X = []
     Y = []
@@ -154,38 +186,6 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     print("Accuracy: {0}".format(accuracy))
     get_most_informative_features(classifier, vec)
     return list_of_good_predictions, list_of_bad_predictions
-
-
-def get_paths(use_all=True):
-    if use_all:
-        path_to_dir = '../classification-scripts/noun-modifications'
-        path_to_train = "{0}/noun-modifications-train-5-new.json".format(
-            path_to_dir)
-        path_to_dev = "{0}/noun-modifications-dev-5-new.json".format(
-            path_to_dir)
-        path_to_test = "{0}/noun-modifications-test-5-new.json".format(
-            path_to_dir)
-
-        return path_to_train, path_to_dev, path_to_test
-    else:
-        path_to_dir_diff = '../classification-scripts/different-noun-modifications'
-        path_to_train_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
-            path_to_dir_diff)
-        path_to_dev_diff = '{0}/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'.format(
-            path_to_dir_diff)
-        path_to_test_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'.format(
-            path_to_dir_diff)
-
-        # get same-noun modifications
-        path_to_dir_same = '../classification-scripts/same-noun-modifications'
-        path_to_train_same = '{0}/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
-            path_to_dir_same)
-        path_to_dev_same = '{0}/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'.format(
-            path_to_dir_same)
-        path_to_test_same = '{0}/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'.format(
-            path_to_dir_same)
-
-        return path_to_train_diff, path_to_dev_diff, path_to_test_diff, path_to_train_same, path_to_dev_same, path_to_test_same
 
 
 def main():
