@@ -205,11 +205,11 @@ def get_paths(use_all=True):
         return path_to_train, path_to_dev, path_to_test
     else:
         path_to_dir_diff = '../classification-scripts/different-noun-modifications'
-        path_to_train_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TRAIN-5-v3.JSON'.format(
+        path_to_train_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
             path_to_dir_diff)
-        path_to_dev_diff = '{0}/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-v3.JSON'.format(
+        path_to_dev_diff = '{0}/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'.format(
             path_to_dir_diff)
-        path_to_test_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TEST-5-v3.JSON'.format(
+        path_to_test_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'.format(
             path_to_dir_diff)
 
         # get same-noun modifications
