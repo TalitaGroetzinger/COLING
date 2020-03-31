@@ -29,15 +29,18 @@ def clean_dict(list_of_wikihow_instances):
 
 def join_tokens(list_of_wikihow_instances):
     new = []
-    bar = Bar()
+    bar = Bar('Processing ...', max=len(list_of_wikihow_instances))
     for wikihow_instance in list_of_wikihow_instances:
         bar.next()
-        wikihow_instance['Source_Line'] = ' '.join(
-            wikihow_instance['Source_Tagged'])
-        wikihow_instance['Target_Line'] = ' '.join(
-            wikihow_instance['Target_Tagged'])
+
+        source_tokens = [pair[0] for pair in wikihow_instance['Source_Tagged']]
+        target_tokens = [pair[0] for pair in wikihow_instance['Target_Tagged']]
+        wikihow_instance['Source_Line'] = source_tokens
+        wikihow_instance['Target_Line'] = target_tokens
+
         del wikihow_instance['Source_Tagged']
         del wikihow_instance['Target_Tagged']
+        new.append(wikihow_instance)
     bar.finish()
     return new
 
