@@ -8,6 +8,11 @@ import nltk
 from sklearn.pipeline import Pipeline, FeatureUnion
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
+import pickle
+
+path_to_markers = '../data/discourse_markers.pickle'
+with open(path_to_markers, 'rb') as pickle_in:
+    markers = pickle.load(pickle_in)
 
 
 def check_word_in_context(context, matches):
@@ -154,3 +159,84 @@ class PreprocessFeatures(object):
 
     def transform(self, X):
         return [self.untokenize(document) for document in X]
+
+
+def check_discourse_matches(tokens, markers):
+    """
+        Input: tokenized sent or document from wikihow_instance
+    """
+    total = 0
+    unigram_matches = 0
+    bigram_matches = 0
+    trigram_matches = 0
+    fourgram_matches = 0
+    fivegram_matches = 0
+    print("-----")
+    # Later zal dit meteen het document zijn/de tokens.
+    for token in tokens:
+        if token in markers.keys():
+            if 'fivegrams' in markers[token].keys():
+                fivegrams = [[tokens[i], tokens[i+1], tokens[i+2],
+                              tokens[i+3], tokens[i+4]] for i in range(len(tokens)-5)]
+                for fivegram in fivegrams:
+                    if fivegram in markers[token]['fivegrams']:
+                        fivegram_matches += 1
+                        total += 1
+                        print(fivegram_matches, '#',
+                              markers[token]['fivegrams'])
+                        print("\n")
+
+            if 'fourgrams' in markers[token].keys():
+                fourgrams = [[tokens[i], tokens[i+1], tokens[i+2],
+                              tokens[i+3]] for i in range(len(tokens)-4)]
+                for fourgram in fourgrams:
+                    if fourgram in markers[token]['fourgrams']:
+                        fourgram_matches += 1
+                        total += 1
+                        print(fourgram, '#', markers[token]['fourgrams'])
+                        print("\n")
+
+            if 'trigrams' in markers[token].keys():
+                trigrams = [[tokens[i], tokens[i+1], tokens[i+2]]
+                            for i in range(len(tokens)-3)]
+                for trigram in trigrams:
+                    if trigram in markers[token]['trigrams']:
+                        trigram_matches += 1
+                        total += 1
+                        print(trigram, '#', markers[token]['trigrams'])
+                        print("\n")
+
+            if 'bigrams' in markers[token].keys():
+                bigrams = [[tokens[i], tokens[i+1]]
+                           for i in range(len(tokens)-2)]
+                for bigram in bigrams:
+                    if bigram in markers[token]['bigrams']:
+                        bigram_matches += 1
+                        total += 1
+                        print(bigram, markers[token]['bigrams'])
+                        print("\n")
+            if 'unigrams' in markers[token].keys():
+                print(token, '#', markers[token]['unigrams'])
+                unigram_matches += 1
+                total += 1
+    return {"score": unigram_matches + bigram_matches + trigram_matches + fourgram_matches + fivegram_matches}
+
+
+class DiscourseFeatures(BaseEstimator, TransformerMixin):
+
+    def fit(self, x, y=None):
+        return self
+
+    def _get_features(self, doc):
+        discourse_score = check_discourse_matches(doc, markers)
+        return discourse_score
+
+    def transform(self, raw_documents):
+        return [self._get_features(doc) for doc in raw_documents]
+
+
+discourse_vec = Pipeline(
+    [
+        ('feat', DiscourseFeatures()), ('vec', DictVectorizer())
+    ]
+)
