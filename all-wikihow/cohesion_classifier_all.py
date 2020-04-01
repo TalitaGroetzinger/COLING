@@ -98,7 +98,7 @@ def get_paths(use_all=True):
 def get_xy(list_of_wikihow_instances, use_context='context'):
     X = []
     Y = []
-    for wikihow_instance in list_of_wikihow_instances[0:2000]:
+    for wikihow_instance in list_of_wikihow_instances:
         if use_context == 'context':
             print("use context level")
             # source_context = wikihow_instance['Source_Context_5_Processed']
@@ -126,7 +126,7 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
             Y.append(1)
 
         else:
-            print("use sentence-level")
+            #print("use sentence-level")
             # source_line = ' '.join(
             #    [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
             # target_line = ' '.join(
