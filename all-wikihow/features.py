@@ -151,7 +151,7 @@ def check_discourse_matches(tokens, markers):
     trigram_matches = 0
     fourgram_matches = 0
     fivegram_matches = 0
-    print("-----")
+    # print("-----")
     # Later zal dit meteen het document zijn/de tokens.
     for token in tokens:
         if token in markers.keys():
@@ -162,9 +162,9 @@ def check_discourse_matches(tokens, markers):
                     if fivegram in markers[token]['fivegrams']:
                         fivegram_matches += 1
                         total += 1
-                        print(fivegram_matches, '#',
-                              markers[token]['fivegrams'])
-                        print("\n")
+                        # print(fivegram_matches, '#',
+                        #      markers[token]['fivegrams'])
+                        # print("\n")
 
             if 'fourgrams' in markers[token].keys():
                 fourgrams = [[tokens[i], tokens[i+1], tokens[i+2],
@@ -173,8 +173,8 @@ def check_discourse_matches(tokens, markers):
                     if fourgram in markers[token]['fourgrams']:
                         fourgram_matches += 1
                         total += 1
-                        print(fourgram, '#', markers[token]['fourgrams'])
-                        print("\n")
+                        # print(fourgram, '#', markers[token]['fourgrams'])
+                        # print("\n")
 
             if 'trigrams' in markers[token].keys():
                 trigrams = [[tokens[i], tokens[i+1], tokens[i+2]]
@@ -183,8 +183,8 @@ def check_discourse_matches(tokens, markers):
                     if trigram in markers[token]['trigrams']:
                         trigram_matches += 1
                         total += 1
-                        print(trigram, '#', markers[token]['trigrams'])
-                        print("\n")
+                        # print(trigram, '#', markers[token]['trigrams'])
+                        # print("\n")
 
             if 'bigrams' in markers[token].keys():
                 bigrams = [[tokens[i], tokens[i+1]]
@@ -193,10 +193,10 @@ def check_discourse_matches(tokens, markers):
                     if bigram in markers[token]['bigrams']:
                         bigram_matches += 1
                         total += 1
-                        print(bigram, markers[token]['bigrams'])
-                        print("\n")
+                        #print(bigram, markers[token]['bigrams'])
+                        # print("\n")
             if 'unigrams' in markers[token].keys():
-                print(token, '#', markers[token]['unigrams'])
+                # print(token, '#', markers[token]['unigrams'])
                 unigram_matches += 1
                 total += 1
     return {"score": unigram_matches + bigram_matches + trigram_matches + fourgram_matches + fivegram_matches}

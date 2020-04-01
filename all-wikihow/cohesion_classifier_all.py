@@ -168,14 +168,19 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
                                 token_pattern='[^ ]+', preprocessor=join_data)
     print("fit data ... ")
-    vec = FeatureUnion(
-        [
-            ('feat', discourse_vec), ('vec', count_vec)
-        ]
-    )
+    # vec = FeatureUnion(
+    #    [
+    #        ('feat', discourse_vec), ('vec', count_vec)
+    #    ]
+    # )
 
+    # vec = CountVectorizer(max_features=None, lowercase=False,
+    #                      ngram_range=(1, 2), stop_words=None, token_pattern='[^ ]+', preprocessor=join_data)
+
+    vec = count_vec
     Xtrain_fitted = vec.fit_transform(Xtrain)
-    Xdev_fitted = vec.transform(Xdev)
+    #Xdev_fitted = vec.transform(Xdev)
+    Xtest_fitted = vec.transform(Xtest)
     # ------------------------------------------------
 
     # classification
@@ -184,12 +189,13 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
 
     print("Finished training ..")
 
-    YpredictDev = classifier.predict_proba(Xdev_fitted)[:, 1]
+    #YpredictDev = classifier.predict_proba(Xdev_fitted)[:, 1]
+    Ypredicttest = classifier.predict_proba(Xtest_fitted)[:, 1]
     positive = 0
     negative = 0
     list_of_good_predictions = []
     list_of_bad_predictions = []
-    for i, (source_prediction, target_prediction) in enumerate(zip(YpredictDev[::2], YpredictDev[1::2])):
+    for i, (source_prediction, target_prediction) in enumerate(zip(Ypredicttest[::2], Ypredicttest[1::2])):
         if source_prediction < target_prediction:
             positive += 1
             list_of_good_predictions.append(i)
@@ -236,6 +242,7 @@ def main():
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
 
+    print("The time is ... ")
     print(time.time()-start)
 
 
