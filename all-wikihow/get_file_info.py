@@ -2,7 +2,7 @@ import json
 from progress.bar import Bar
 
 
-path_to_train = 'wikihow-test.json'
+path_to_train = 'wikihow-train.json'
 
 with open(path_to_train) as json_in:
     content = json.load(json_in)
@@ -10,7 +10,7 @@ with open(path_to_train) as json_in:
 
 list_of_files = list(set([wikihow_instance['Filename']
                           for wikihow_instance in content]))
-with open('test_files.txt', 'w') as file_out:
+with open('train_files.txt', 'w') as file_out:
     bar = Bar('Processing ...', max=len(list_of_files))
     for filename in list_of_files:
         bar.next()
