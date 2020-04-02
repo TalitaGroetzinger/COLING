@@ -17,3 +17,4 @@ classification-scripts/noun-modifications
 all-wikihow/wikihow-dev.json
 all-wikihow/wikihow-test.json
 all-wikihow/wikihow-train.json
+venv
