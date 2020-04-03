@@ -17,4 +17,7 @@ classification-scripts/noun-modifications
 all-wikihow/wikihow-dev.json
 all-wikihow/wikihow-test.json
 all-wikihow/wikihow-train.json
-venv
+all-wikihow/meta/dev_files.txt
+all-wikihow/meta/test_files.txt
+all-wikihow/meta/train_files.txt
+all-wikihow/wikihow_v6_with_numbers_lines.json

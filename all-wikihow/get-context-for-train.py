@@ -48,29 +48,8 @@ def main():
     print("Get files ...")
     files_in_dict_format = get_file_to_dict_format()
 
-    print("Load json")
-    with open('./DIFF-NOUN-MODIFICATIONS-LINE-NR.json', 'r') as json_in:
-        content = json.load(json_in)
-        new = []
-        counter = 0
-        for wikihow_instance in content:
-            counter = counter + 1
-            print("{0}/{1}".format(counter, len(content)))
-            if wikihow_instance['Loc_in_splits'] == 'TRAIN':
-                source_line_nr = wikihow_instance['Source_Line_Nr'][0]
-                target_line_nr = wikihow_instance['Target_Line_Nr'][-1]
-                filename = wikihow_instance['Filename']
-                filename_key = filename + '.bz2'
-                source_line_nr_content = get_line_and_file(
-                    filename_key, source_line_nr, files_in_dict_format)
-                wikihow_instance['Source_Context'] = source_line_nr_content
-                target_line_nr_content = get_line_and_file(
-                    filename_key, target_line_nr, files_in_dict_format)
-                wikihow_instance['Target_Context'] = target_line_nr_content
-                new.append(wikihow_instance)
-
-    with open('DIFF-NOUN-MODIFICATIONS-TRAIN.json', 'w') as json_out:
-        json.dump(new, json_out)
+    with open('train-dict-format.json', 'w') as json_out:
+        json.dump(files_in_dict_format, json_out)
 
 
 main()
