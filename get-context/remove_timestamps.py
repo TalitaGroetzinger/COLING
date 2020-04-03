@@ -3,7 +3,6 @@ import json
 import argparse
 from nltk.tokenize import word_tokenize
 from pprint import pprint
-from features import CoherenceFeatures
 
 
 def get_processed_context(source_context):

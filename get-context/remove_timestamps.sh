@@ -1,3 +1,1 @@
-python process.py --input ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-v2.json --output ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-v3.json
-python process.py --input ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-v2.json --output ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-v3.json
-python process.py --input ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-v2.json --output ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-v3.json
+python remove_timestamps.py --input ../all-wikihow/splits/wikihow-test-context-5.json --output  ../all-wikihow/splits/wikihow-test-context-5.json 
