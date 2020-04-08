@@ -10,7 +10,7 @@ from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 import pickle
 
-path_to_markers = '../data/discourse_markers.pickle'
+path_to_markers = 'discourse_markers.pickle'
 with open(path_to_markers, 'rb') as pickle_in:
     markers = pickle.load(pickle_in)
 
@@ -151,7 +151,7 @@ def check_discourse_matches(tokens, markers):
     trigram_matches = 0
     fourgram_matches = 0
     fivegram_matches = 0
-    # print("-----")
+    print("-----")
     # Later zal dit meteen het document zijn/de tokens.
     for token in tokens:
         if token in markers.keys():
@@ -196,7 +196,7 @@ def check_discourse_matches(tokens, markers):
                         #print(bigram, markers[token]['bigrams'])
                         # print("\n")
             if 'unigrams' in markers[token].keys():
-                # print(token, '#', markers[token]['unigrams'])
+                print(token, '#', markers[token]['unigrams'])
                 unigram_matches += 1
                 total += 1
     return {"score": unigram_matches + bigram_matches + trigram_matches + fourgram_matches + fivegram_matches}

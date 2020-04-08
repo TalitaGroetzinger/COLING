@@ -69,11 +69,11 @@ def get_paths(use_all=True):
         #    path_to_dir)
         # path_to_test = "{0}/noun-modifications-test-5-new.json".format(
         #    path_to_dir)
-        path_to_train = './wikihow-train.json'
-        path_to_test = './wikihow-test.json'
-        path_to_dev = './wikihow-dev.json'
+        path_to_train = './wikihow-train-context-5-new.json'
+        path_to_test = './wikihow-test-context-5-new.json'
+        # path_to_dev = './wikihow-dev.json'
 
-        return path_to_train, path_to_dev, path_to_test
+        return path_to_train, path_to_test
     else:
         path_to_dir_diff = '../classification-scripts/different-noun-modifications'
         path_to_train_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
@@ -100,13 +100,13 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
     Y = []
     for wikihow_instance in list_of_wikihow_instances:
         if use_context == 'context':
-            print("use context level")
+            # print("use context level")
             # source_context = wikihow_instance['Source_Context_5_Processed']
             # target_context = wikihow_instance['Target_Context_5_Processed']
             source_context = word_tokenize(
-                wikihow_instance['Source_Context_5_Processed'])
+                ' ' .join(wikihow_instance['Source_Context_5_Processed']))
             target_context = word_tokenize(
-                wikihow_instance['Target_Context_5_Processed'])
+                ' '.join(wikihow_instance['Target_Context_5_Processed']))
             X.append(source_context)
             Y.append(0)
             X.append(target_context)
@@ -126,7 +126,7 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
             Y.append(1)
 
         else:
-            #print("use sentence-level")
+            # print("use sentence-level")
             # source_line = ' '.join(
             #    [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
             # target_line = ' '.join(
@@ -145,25 +145,23 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
     return X, Y
 
 
-def get_data(path_to_train, path_to_dev, path_to_test, context_value='context'):
+def get_data(path_to_train, path_to_test,  context_value='context'):
     """
         use_context_level: 'context', 'context-matches', 'sentence'
     """
     # load train and test set
     with open(path_to_train, 'r') as json_in:
         train = json.load(json_in)
-    with open(path_to_dev, 'r') as json_in:
-        dev = json.load(json_in)
     with open(path_to_test, 'r') as json_in:
         test = json.load(json_in)
 
     Xtrain, Ytrain = get_xy(train, use_context=context_value)
-    Xdev, Ydev = get_xy(dev, use_context=context_value)
-    Xtest, Ytest = get_xy(test, use_context=context_value)
-    return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
+    Xdev, Ydev = get_xy(test, use_context=context_value)
+    # Xtest, Ytest = get_xy(test, use_context=context_value)
+    return Xtrain, Ytrain, Xdev, Ydev
 
 
-def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
+def train_classifier(Xtrain, Ytrain, Xtest, Ytest):
     # don't forget to remove the __REV__ tags in the from coherence_vec
     count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
                                 token_pattern='[^ ]+', preprocessor=join_data)
@@ -174,13 +172,15 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     #    ]
     # )
 
-    # vec = CountVectorizer(max_features=None, lowercase=False,
-    #                      ngram_range=(1, 2), stop_words=None, token_pattern='[^ ]+', preprocessor=join_data)
+    # be aware that we have to normalise the data!!
 
     vec = count_vec
     Xtrain_fitted = vec.fit_transform(Xtrain)
-    #Xdev_fitted = vec.transform(Xdev)
+    # Xdev_fitted = vec.transform(Xdev)
     Xtest_fitted = vec.transform(Xtest)
+    normalize(Xtrain_fitted, copy=False)
+    normalize(Xtest_fitted, copy=False)
+
     # ------------------------------------------------
 
     # classification
@@ -189,7 +189,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
 
     print("Finished training ..")
 
-    #YpredictDev = classifier.predict_proba(Xdev_fitted)[:, 1]
+    # YpredictDev = classifier.predict_proba(Xdev_fitted)[:, 1]
     Ypredicttest = classifier.predict_proba(Xtest_fitted)[:, 1]
     positive = 0
     negative = 0
@@ -204,7 +204,7 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
             list_of_bad_predictions.append(i)
     accuracy = (positive/(positive+negative))
     print("Accuracy: {0}".format(accuracy))
-    #get_most_informative_features(classifier, vec)
+    # get_most_informative_features(classifier, vec)
     return list_of_good_predictions, list_of_bad_predictions
 
 
@@ -234,13 +234,13 @@ def main():
 
     start = time.time()
 
-    train, dev, test = get_paths(use_all=True)
+    train, test = get_paths(use_all=True)
 
-    Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = get_data(
-        train, dev, test, context_value='sentences')
+    Xtrain, Ytrain, Xtest, Ytest = get_data(
+        train, test, context_value='context')
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
-        Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)
+        Xtrain, Ytrain, Xtest, Ytest)
 
     print("The time is ... ")
     print(time.time()-start)

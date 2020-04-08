@@ -22,7 +22,10 @@ def sentence_splitter(document):
     sentence = next(sentences)
     while sentence:
         if re.match(pattern, sentence):
-            next_sentence = next(sentences)
+            try:
+                next_sentence = next(sentences)
+            except StopIteration:
+                break
             merged = f"{sentence} {next_sentence}"
             merged_item_sents.append(merged)
         else:
@@ -32,6 +35,7 @@ def sentence_splitter(document):
             sentence = next(sentences)
         except StopIteration:
             sentence = False
+            break
     return merged_item_sents
 
 
