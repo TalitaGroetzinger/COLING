@@ -1,1 +1,1 @@
-python remove_timestamps.py --input ../all-wikihow/splits/wikihow-test-context-5.json --output  ../all-wikihow/splits/wikihow-test-context-5.json 
+python remove_timestamps.py --input wikihow-train-context-5.json --output  wikihow-train-context-5-new.json 

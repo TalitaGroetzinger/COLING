@@ -1,1 +1,1 @@
-scp ../classification-scripts/classification-data/dev_files_copy.txt anthonta@wiesenweihe.ims.uni-stuttgart.de:~/COLING
+scp ../classification-scripts/classification-data/dev_files_copy.txt anthonta@wiesenweihe.ims.uni-stuttgart.de:/mount/arbeitsdaten/emmy-noether-roth/mist/Talita/COLING-other
