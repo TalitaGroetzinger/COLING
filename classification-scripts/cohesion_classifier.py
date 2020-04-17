@@ -62,11 +62,11 @@ def join_data(x):
 def get_paths(use_all=True):
     if use_all:
         path_to_dir = '../classification-scripts/noun-modifications'
-        path_to_train = "{0}/noun-modifications-train-5-new.json".format(
+        path_to_train = "{0}/noun-modifications-train-5-new-lines.json".format(
             path_to_dir)
-        path_to_dev = "{0}/noun-modifications-dev-5-new.json".format(
+        path_to_dev = "{0}/noun-modifications-dev-5-new-lines.json".format(
             path_to_dir)
-        path_to_test = "{0}/noun-modifications-test-5-new.json".format(
+        path_to_test = "{0}/noun-modifications-test-5-new-lines.json".format(
             path_to_dir)
 
         return path_to_train, path_to_dev, path_to_test
@@ -99,10 +99,8 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
             print("use context level")
             #source_context = wikihow_instance['Source_Context_5_Processed']
             #target_context = wikihow_instance['Target_Context_5_Processed']
-            source_context = word_tokenize(
-                wikihow_instance['Source_Context_5_Processed'])
-            target_context = word_tokenize(
-                wikihow_instance['Target_Context_5_Processed'])
+            source_context = wikihow_instance['Source_Context_5_Processed']
+            target_context = wikihow_instance['Target_Context_5_Processed']
             X.append(source_context)
             Y.append(0)
             X.append(target_context)
@@ -123,14 +121,8 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
 
         else:
             print("use sentence-level")
-            # source_line = ' '.join(
-            #    [pair[0] for pair in wikihow_instance['Source_Line_Tagged']])
-            # target_line = ' '.join(
-            #    [pair[0] for pair in wikihow_instance['Target_Line_Tagged']])
-            target_line = [pair[0]
-                           for pair in wikihow_instance['Target_Line_Tagged']]
-            source_line = [pair[0]
-                           for pair in wikihow_instance['Source_Line_Tagged']]
+            source_line = wikihow_instance['Source_Line']
+            target_line = wikihow_instance['Target_Line']
             X.append(source_line)
             Y.append(0)
             X.append(target_line)
@@ -159,14 +151,9 @@ def get_data(path_to_train, path_to_dev, path_to_test, context_value='context'):
 
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # don't forget to remove the __REV__ tags in the from coherence_vec
-    count_vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
-                                token_pattern='[^ ]+', preprocessor=join_data)
+    vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
+                          token_pattern='[^ ]+')
     print("fit data ... ")
-    vec = FeatureUnion(
-        [
-            ('feat', lexical_complexity_vec), ('vec', count_vec)
-        ]
-    )
 
     Xtrain_fitted = vec.fit_transform(Xtrain)
     Xdev_fitted = vec.transform(Xdev)
