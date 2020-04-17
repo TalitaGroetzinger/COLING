@@ -3,7 +3,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.preprocessing import normalize
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, RegexpTokenizer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from collections import Counter
 from progress.bar import Bar
@@ -120,7 +120,7 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
             Y.append(1)
 
         else:
-            print("use sentence-level")
+            #print("use sentence-level")
             source_line = wikihow_instance['Source_Line']
             target_line = wikihow_instance['Target_Line']
             X.append(source_line)
@@ -149,10 +149,15 @@ def get_data(path_to_train, path_to_dev, path_to_test, context_value='context'):
     return Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest
 
 
+def regex_tokeniser(x):
+    tokenizer = RegexpTokenizer('[^ ]+')
+    return tokenizer.tokenize(x)
+
+
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # don't forget to remove the __REV__ tags in the from coherence_vec
-    vec = TfidfVectorizer(max_features=None, lowercase=False, ngram_range=(1, 2),
-                          token_pattern='[^ ]+')
+    vec = CountVectorizer(max_features=None, lowercase=False,
+                          ngram_range=(1, 1), tokenizer=get_length_features_context, preprocessor=regex_tokeniser)
     print("fit data ... ")
 
     Xtrain_fitted = vec.fit_transform(Xtrain)
@@ -178,6 +183,8 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
             negative += 1
             list_of_bad_predictions.append(i)
     accuracy = (positive/(positive+negative))
+    print(len(Xdev))
+    print(positive+negative)
     print("Accuracy: {0}".format(accuracy))
     get_most_informative_features(classifier, vec)
     return list_of_good_predictions, list_of_bad_predictions
