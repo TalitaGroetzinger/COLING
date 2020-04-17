@@ -156,10 +156,10 @@ def regex_tokeniser(x):
 
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # don't forget to remove the __REV__ tags in the from coherence_vec
-    # count_vec = TfidfVectorizer(max_features=None, lowercase=False,
-    #                            ngram_range=(1, 2), token_pattern='[^ ]+')\
-    count_vec = CountVectorizer(max_features=None, lowercase=False,
-                                ngram_range=(1, 2), tokenizer=word_tokenize)
+    count_vec = TfidfVectorizer(max_features=None, lowercase=False,
+                                ngram_range=(1, 2), token_pattern='[^ ]+')\
+        # count_vec = CountVectorizer(max_features=None, lowercase=False,
+    #                            ngram_range=(1, 2), tokenizer=word_tokenize)
     print("fit data ... ")
 
     vec = FeatureUnion(
