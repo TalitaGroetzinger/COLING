@@ -240,12 +240,16 @@ class LexicalComplexity(BaseEstimator, TransformerMixin):
         return [self._get_features(doc) for doc in raw_documents]
 
 
-def type_token_ratio(document):
+def type_token_ratio(document, regex=False):
     """
         Input: tokenize document 
         Returns: the type-token-ratio for a document.
     """
-    all_tokens = regex_tokeniser(document)
+    if regex:
+        all_tokens = regex_tokeniser(document)
+    else:
+        print("do not use regex")
+        all_tokens = word_tokenize(document)
     num_of_tokens = len(all_tokens)
     unique_tokens = list(set(all_tokens))
     num_of_unique_tokens = len(unique_tokens)
