@@ -156,9 +156,15 @@ def regex_tokeniser(x):
 
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # don't forget to remove the __REV__ tags in the from coherence_vec
-    vec = CountVectorizer(max_features=None, lowercase=False,
-                          ngram_range=(1, 1), tokenizer=get_length_features_context, preprocessor=regex_tokeniser)
+    count_vec = TfidfVectorizer(max_features=None, lowercase=False,
+                                ngram_range=(1, 2), token_pattern='[^ ]+')
     print("fit data ... ")
+
+    vec = FeatureUnion(
+        [
+            ('feat', count_vec), ('vec', lexical_complexity_vec)
+        ]
+    )
 
     Xtrain_fitted = vec.fit_transform(Xtrain)
     Xdev_fitted = vec.transform(Xdev)
@@ -216,7 +222,7 @@ def main():
     train, dev, test = get_paths(use_all=True)
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = get_data(
-        train, dev, test, context_value='context')
+        train, dev, test, context_value='sentence')
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)

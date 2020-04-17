@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.preprocessing import normalize
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction import DictVectorizer
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, RegexpTokenizer
 import nltk
 from sklearn.pipeline import Pipeline, FeatureUnion
 from collections import Counter
@@ -13,6 +13,11 @@ import pickle
 path_to_markers = '../data/discourse_markers.pickle'
 with open(path_to_markers, 'rb') as pickle_in:
     markers = pickle.load(pickle_in)
+
+
+def regex_tokeniser(x):
+    tokenizer = RegexpTokenizer('[^ ]+')
+    return tokenizer.tokenize(x)
 
 
 class MeanEmbeddingVectorizer(object):
@@ -240,7 +245,7 @@ def type_token_ratio(document):
         Input: tokenize document 
         Returns: the type-token-ratio for a document.
     """
-    all_tokens = [token for token in document]
+    all_tokens = regex_tokeniser(document)
     num_of_tokens = len(all_tokens)
     unique_tokens = list(set(all_tokens))
     num_of_unique_tokens = len(unique_tokens)
