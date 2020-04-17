@@ -1,0 +1,2 @@
+python match_dicts_noun_mod.py --input './noun-modifications/noun-modifications-dev-5-new.json' --output "noun-modifications-dev-5-new-lines.json"
+python match_dicts_noun_mod.py --input './noun-modifications/noun-modifications-train-5-new.json' --output "noun-modifications-train-5-new-lines.json"
