@@ -59,17 +59,27 @@ def join_data(x):
     return ' '.join(x)
 
 
-def get_paths(use_all=True):
+def get_paths(use_all=True, use_base_context=True):
     if use_all:
         path_to_dir = '../classification-scripts/noun-modifications'
-        path_to_train = "{0}/noun-modifications-train-5-new-lines.json".format(
-            path_to_dir)
-        path_to_dev = "{0}/noun-modifications-dev-5-new-lines.json".format(
-            path_to_dir)
-        path_to_test = "{0}/noun-modifications-test-5-new-lines.json".format(
-            path_to_dir)
-
-        return path_to_train, path_to_dev, path_to_test
+        if use_base_context:
+            file_morph = 'base-target'
+            path_to_train = "{0}/noun-modifications-train-{1}.json".format(
+                path_to_dir, file_morph)
+            path_to_dev = "{0}/noun-modifications-dev-{1}.json".format(
+                path_to_dir, file_morph)
+            path_to_test = "{0}/noun-modifications-test-{1}.json".format(
+                path_to_dir, file_morph)
+            print("using the files that have base context")
+            return path_to_train, path_to_dev, path_to_test
+        else:
+            path_to_train = "{0}/noun-modifications-train-5-new-lines.json".format(
+                path_to_dir)
+            path_to_dev = "{0}/noun-modifications-dev-5-new-lines.json".format(
+                path_to_dir)
+            path_to_test = "{0}/noun-modifications-test-5-new-lines.json".format(
+                path_to_dir)
+            return path_to_train, path_to_dev, path_to_test
     else:
         path_to_dir_diff = '../classification-scripts/different-noun-modifications'
         path_to_train_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
@@ -118,7 +128,15 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
             Y.append(0)
             X.append(new_target)
             Y.append(1)
+        elif use_context == 'base':
+            print("use base contexts")
+            source_context = wikihow_instance['Source_Context_5_Processed']
+            target_context = wikihow_instance['Source_Target_base_Processed']
 
+            X.append(source_context)
+            Y.append(0)
+            X.append(new_target)
+            Y.append(1)
         else:
             #print("use sentence-level")
             source_line = wikihow_instance['Source_Line']
