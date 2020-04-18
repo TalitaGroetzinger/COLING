@@ -5,18 +5,35 @@ from nltk.tokenize import word_tokenize
 from pprint import pprint
 
 
+def remove_timestamps(list_with_indexes, source_context):
+    if len(list_with_indexes) == 1:
+        index = list_with_indexes[0]
+        if index < 5:
+            return source_context[index+1:]
+        else:
+            return source_context[:index]
+    elif len(list_with_indexes) == 2:
+        first_index = list_with_indexes[0]
+        second_index = list_with_indexes[-1]
+        return source_context[first_index+1:second_index]
+    else:
+        first_index = max(filter(lambda index: index < 5, list_with_indexes))
+        second_index = min(filter(lambda index: index > 5, list_with_indexes))
+
+        return source_context[first_index+1:second_index]
+
+
 def get_processed_context(source_context):
-    for sent in source_context:
+    timestamp_indexes = []
+    for index, sent in enumerate(source_context):
         if '## Timestamp' in sent:
-            source_timestamp_index = source_context.index(sent)
-            if source_timestamp_index < 5:
-                return source_context[source_timestamp_index+1:]
-            else:
-                return source_context[:source_timestamp_index]
+            timestamp_indexes.append(index)
+            source_context = remove_timestamps(
+                timestamp_indexes, source_context)
     return source_context
 
 
-def remove_timestamps(list_of_wikihow_instances):
+def remove_timestamps_from_collection(list_of_wikihow_instances):
     """
         This function will be used to remove timestamps from Source_Context_5 and Target_Context_5.
     """
@@ -24,15 +41,20 @@ def remove_timestamps(list_of_wikihow_instances):
     bar = Bar('Processing ...', max=len(list_of_wikihow_instances))
     for wikihow_instance in list_of_wikihow_instances:
         bar.next()
-        source_context = wikihow_instance['Source_Context_5']
+        source_context = wikihow_instance['Source_Context_5_new']
         wikihow_instance['Source_Context_5_Processed'] = get_processed_context(
             source_context)
 
         # repeat steps for target
         # i will just replace this line for now
-        target_context = wikihow_instance['Source_Target_base']
-        wikihow_instance['Source_Target_base_Processed'] = get_processed_context(
+        target_context = wikihow_instance['Target_Context_5_new']
+        wikihow_instance['Target_Context_5_Processed'] = get_processed_context(
             target_context)
+
+        # but still add the other one just in case:
+        #target_context_original = wikihow_instance['Target_Context']
+        # wikihow_instance['Target_Context_5_Processed_org'] = get_processed_context(
+        #    target_context_original)
 
         filtered.append(wikihow_instance)
     bar.finish()
@@ -54,8 +76,11 @@ if __name__ == '__main__':
 
     with open(filename_to_open, "r") as json_in:
         wikihow_instances = json.load(json_in)
-    new_wikihow_instances = remove_timestamps(wikihow_instances)
-    #assert len(new_wikihow_instances) == len(wikihow_instances)
+    new_wikihow_instances = remove_timestamps_from_collection(
+        wikihow_instances)
+
+    # check if the length is equal
+    assert len(new_wikihow_instances) == len(wikihow_instances)
 
     for elem in new_wikihow_instances:
         pprint(elem['Source_Context'])
