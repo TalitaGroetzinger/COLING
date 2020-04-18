@@ -29,8 +29,9 @@ def remove_timestamps(list_of_wikihow_instances):
             source_context)
 
         # repeat steps for target
-        target_context = wikihow_instance['Target_Context_5']
-        wikihow_instance['Target_Context_5_Processed'] = get_processed_context(
+        # i will just replace this line for now
+        target_context = wikihow_instance['Source_Target_base']
+        wikihow_instance['Source_Target_base_Processed'] = get_processed_context(
             target_context)
 
         filtered.append(wikihow_instance)

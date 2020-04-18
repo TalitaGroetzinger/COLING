@@ -1,1 +1,3 @@
-python remove_timestamps.py --input ../all-wikihow/splits/wikihow-test-context-5.json --output  ../all-wikihow/splits/wikihow-test-context-5.json 
+python remove_timestamps.py --input ../classification-scripts/noun-modifications/noun-modifications-test-base-target.json --output ../classification-scripts/noun-modifications/noun-modifications-test-base-target-v2.json 
+python remove_timestamps.py --input ../classification-scripts/noun-modifications/noun-modifications-train-base-target.json --output ../classification-scripts/noun-modifications/noun-modifications-train-base-target-v2.json 
+python remove_timestamps.py --input ../classification-scripts/noun-modifications/noun-modifications-dev-base-target.json --output ../classification-scripts/noun-modifications/noun-modifications-dev-base-target-v2.json 
