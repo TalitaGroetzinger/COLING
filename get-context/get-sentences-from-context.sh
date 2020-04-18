@@ -1,3 +1,3 @@
-python get_sentences_from_context.py --input ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-new.json --output ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TEST-5-v2.json
-python get_sentences_from_context.py --input ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.json --output ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-TRAIN-5-v2.json
-python get_sentences_from_context.py --input ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-new.json --output ../classification-scripts/same-noun-modifications/SAME-NOUN-MODIFICATIONS-DEV-5-v2.json
+python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-test-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-test-with-match.json
+python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-dev-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-dev-with-match.json
+python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-train-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-train-with-match.json

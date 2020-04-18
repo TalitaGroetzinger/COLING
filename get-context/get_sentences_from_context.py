@@ -6,6 +6,13 @@ import re
 import argparse
 
 
+def remove_html_tags(text):
+    """Remove html tags from a string"""
+    import re
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
+
+
 def sentence_splitter(document):
     """
       Sentence splitter to deal with bullet items in texts.
@@ -35,14 +42,24 @@ def sentence_splitter(document):
     return merged_item_sents
 
 
-def get_matching_sent_context(context, sent, windows=[1, 2, 3, 4, 5], use_sent_from_context=False):
+def get_matching_sent_context(context, sent, windows=[1, 2, 3, 4, 5], use_sent_from_context=True, tokenized=True):
     """
         Use this function to get closest match to a source_line or target_line in a paragraph.
+        Tokenized: whether the input sent should be tokenized or not. 
+        use_sent_from_context: if true, then the matched sent will be taken in the final representation. 
+
     """
     sentence_tokenized_document = sentence_splitter(context)
     bleu_scores = []
     sents = []
+    if tokenized:
+        sent = word_tokenize(sent)
+
+    else:
+        sent = sent
+
     for elem in sentence_tokenized_document:
+        elem = remove_html_tags(elem)
         reference = [word_tokenize(elem)]
         score = sentence_bleu(reference, sent)
         bleu_scores.append(score)
@@ -69,34 +86,25 @@ def get_matching_sent_context(context, sent, windows=[1, 2, 3, 4, 5], use_sent_f
     if use_sent_from_context:
         context = previous_sentences + [matched_sent] + next_sentences
     else:
-        context = previous_sentences + [' '.join(sent)] + next_sentences
+        # or just 'sent' if we don't tokenise.
+        context = previous_sentences + sent + next_sentences
     return context
 
 
-def add_filtered_context(list_of_wikihow_instances, different_nouns=True):
+def add_filtered_context(list_of_wikihow_instances):
     print(len(list_of_wikihow_instances))
     bar = Bar('Processing ... ', max=len(list_of_wikihow_instances))
     new_wikihow_instances = []
     for wikihow_instance in list_of_wikihow_instances:
         bar.next()
-        if different_nouns:
-            source_tokenized = [pair[0]
-                                for pair in wikihow_instance['Source_Line_Tagged']]
-            target_tokenized = [pair[0]
-                                for pair in wikihow_instance['Target_Line_Tagged']]
-        else:
-            source_tokenized = [pair[0]
-                                for pair in wikihow_instance['Source_tagged']]
-            target_tokenized = [pair[0]
-                                for pair in wikihow_instance['Target_Tagged']]
 
         source_context_filtered = get_matching_sent_context(
-            wikihow_instance['Source_Context'], source_tokenized)
-        wikihow_instance['Source_Context_5'] = source_context_filtered
+            wikihow_instance['Source_Context'], wikihow_instance['Source_Line'])
+        wikihow_instance['Source_Context_5_new'] = source_context_filtered
         #  get new context for target
         target_context_filtered = get_matching_sent_context(
-            wikihow_instance['Target_Context'], target_tokenized)
-        wikihow_instance['Target_Context_5'] = target_context_filtered
+            wikihow_instance['Target_Context'], wikihow_instance['Target_Line'])
+        wikihow_instance['Target_Context_5_new'] = target_context_filtered
         new_wikihow_instances.append(wikihow_instance)
     bar.finish()
     return new_wikihow_instances
@@ -116,7 +124,7 @@ if __name__ == '__main__':
     print("filename to write: ", filename_to_write)
     with open(filename_to_open, "r") as json_in:
         wikihow_instances = json.load(json_in)
-    new_wikihow_instances = add_filtered_context(wikihow_instances, True)
+    new_wikihow_instances = add_filtered_context(wikihow_instances)
     print("------------------------------------")
     print("examples: ")
     for elem in new_wikihow_instances[0:10]:
