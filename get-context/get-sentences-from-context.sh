@@ -1,3 +1,3 @@
-python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-test-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-test-with-match.json
-python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-dev-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-dev-with-match.json
-python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-train-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-train-with-match.json
+python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-test-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-test-without-match.json
+python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-dev-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-dev-without-match.json
+python get_sentences_from_context.py --input ../classification-scripts/noun-modifications/noun-modifications-train-5-new-lines.json --output ../classification-scripts/noun-modifications/noun-modifications-train-without-match.json
