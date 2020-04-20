@@ -24,12 +24,12 @@ def main():
     print("Make file for test")
     path_to_test = '{0}noun-modifications-test-5-new-lines.json'.format(
         path_to_dir)
-    print("Make file for dev")
-    path_to_train = '{0}noun-modifications-dev-5-new-lines.json'.format(
+    print("Make file for train")
+    path_to_train = '{0}noun-modifications-train-5-new-lines.json'.format(
         path_to_dir)
 
     # path to dev is goed gegaan
-    print("Make file for train")
+    print("Make file for dev")
     path_to_dev = '{0}noun-modifications-dev-5-new-lines.json'.format(
         path_to_dir)
 
