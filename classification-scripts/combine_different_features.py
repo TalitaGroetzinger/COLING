@@ -14,6 +14,8 @@ import pandas as pd
 from nltk.tokenize import word_tokenize
 from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, discourse_vec, lrec_vec, lexical_complexity_vec
 from sklearn.naive_bayes import MultinomialNB
+import pickle
+from progress.bar import Bar
 
 
 class ItemSelector(BaseEstimator, TransformerMixin):
@@ -56,10 +58,14 @@ class ItemSelector(BaseEstimator, TransformerMixin):
         return data_dict[self.key]
 
 
-def regroup_context(context):
-    merged_context = [value if type(value) == str else ' '.join(value)
-                      for key, value in context.items()]
-    return ' '.join(merged_context)
+def regroup_context(context, tokenize=True):
+    merged_context = [value if type(value) == str else ' '.join(
+        value) for key, value in context.items()]
+    if tokenize:
+        new_context = ' '.join(merged_context)
+        return [word_tokenize(sent) for sent in new_context]
+    else:
+        return new_context
 
 
 def get_paths():
@@ -74,18 +80,41 @@ def get_paths():
 
 def make_df(json_file):
     df_dict = {"X_Line": [], "X_Context": [], "Y": []}
+    bar = Bar("Processing ...", max=len(json_file))
     for wikihow_instance in json_file:
+        bar.next()
         # add the source components
         df_dict["X_Line"].append(wikihow_instance['Source_Line'])
         df_dict["X_Context"].append(regroup_context(
-            wikihow_instance['Source_Context_5']))
+            wikihow_instance['Source_Context_5'], tokenize=False))
         df_dict["Y"].append(0)
         # add the target components
         df_dict["X_Line"].append(wikihow_instance['Target_Line'])
         df_dict["X_Context"].append(regroup_context(
-            wikihow_instance['Target_Context_5']))
+            wikihow_instance['Target_Context_5'], tokenize=False))
         df_dict["Y"].append(1)
+    bar.finish()
     return df_dict
+
+
+def make_df_save(json_file, name_to_write):
+    df_dict = {"X_Line": [], "X_Context": [], "Y": []}
+    bar = Bar("Processing ...", max=len(json_file))
+    for wikihow_instance in json_file:
+        bar.next()
+        # add the source components
+        df_dict["X_Line"].append(wikihow_instance['Source_Line'])
+        df_dict["X_Context"].append(regroup_context(
+            wikihow_instance['Source_Context_5'], tokenize=True))
+        df_dict["Y"].append(0)
+        # add the target components
+        df_dict["X_Line"].append(wikihow_instance['Target_Line'])
+        df_dict["X_Context"].append(regroup_context(
+            wikihow_instance['Target_Context_5'], tokenize=True))
+        df_dict["Y"].append(1)
+    bar.finish()
+    with open(name_to_write, 'wb') as pickle_out:
+        pickle.dump(df_dict, pickle_out)
 
 
 def train_data(train, dev, test):
@@ -143,11 +172,15 @@ def main():
     with open(path_to_test, 'r') as json_in:
         test = json.load(json_in)
 
-    dev = make_df(dev)
-    train = make_df(train)
-    test = make_df(test)
+    print("make one for dev")
+    make_df_save(dev, "dev_tok.pickle")
+    print("make one for train")
+    make_df_save(train, "train_tok.pickle")
+    print("make one for test")
 
-    train_data(train, dev, test)
+    make_df_save(test, "test_tok.pickle")
+
+#train_data(train, dev, test)
 
 
 main()
