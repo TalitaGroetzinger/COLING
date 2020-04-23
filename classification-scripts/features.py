@@ -16,11 +16,6 @@ with open(path_to_markers, 'rb') as pickle_in:
     markers = pickle.load(pickle_in)
 
 
-def regex_tokeniser(x):
-    tokenizer = RegexpTokenizer('[^ ]+')
-    return tokenizer.tokenize(x)
-
-
 class MeanEmbeddingVectorizer(object):
     def __init__(self, word2vec):
         self.word2vec = word2vec
@@ -121,6 +116,24 @@ class MultipleItemSelector(BaseEstimator, TransformerMixin):
         return data_dict[self.key1], data_dict[self.key2]
 
 
+class CoherenceFeatures(BaseEstimator, TransformerMixin):
+
+    def fit(self, x, y=None):
+        return self
+
+    def _get_features(self, doc):
+        try:
+            coherence = compute_coherence(doc)
+        # there is one case for which we can not compute the coherence due to tokenisation issues (T.V cannot become t.v.)
+        # since it's only once case, I will just provide the score here.
+        except ZeroDivisionError:
+            coherence = {"score": 1.0}
+        return coherence
+
+    def transform(self, raw_documents):
+        return [self._get_features(doc) for doc in raw_documents]
+
+
 def get_length_features(document, thresshold=15):
     length_doc = len(document)
     if length_doc > 15:
@@ -165,10 +178,6 @@ def pos_tags_and_length(document, thresshold=150):
     return [word + '_' + tag + '_' + length_type for word, tag in nltk.pos_tag(document)]
 
 
-lrec_vec = CountVectorizer(max_features=None, lowercase=False,
-                           ngram_range=(1, 2), stop_words=None, token_pattern='[^ ]+')
-
-
 def compute_coherence(doc):
     """
         Input: X formatted with __REV__
@@ -191,41 +200,35 @@ def compute_coherence(doc):
     return d
 
 
-class CoherenceFeatures(BaseEstimator, TransformerMixin):
+class DiscourseFeatures(BaseEstimator, TransformerMixin):
 
     def fit(self, x, y=None):
         return self
 
     def _get_features(self, doc):
-        try:
-            coherence = compute_coherence(doc)
-        # there is one case for which we can not compute the coherence due to tokenisation issues (T.V cannot become t.v.)
-        # since it's only once case, I will just provide the score here.
-        except ZeroDivisionError:
-            coherence = {"score": 1.0}
-        return coherence
+        discourse_score = check_discourse_matches(doc, markers)
+        return discourse_score
+
+    def transform(self, raw_documents):
+        features = []
+        bar = Bar('Processing ', max=len(raw_documents))
+        for doc in raw_documents:
+            bar.next()
+            features.append(self._get_features(doc))
+        return features
+
+
+class LexicalComplexity(BaseEstimator, TransformerMixin):
+
+    def fit(self, x, y=None):
+        return self
+
+    def _get_features(self, doc):
+        lexical_score = type_token_ratio(doc)
+        return lexical_score
 
     def transform(self, raw_documents):
         return [self._get_features(doc) for doc in raw_documents]
-
-
-coherence_vec = Pipeline(
-    [
-        ('feat', CoherenceFeatures()), ('vec', DictVectorizer())
-    ]
-)
-
-
-class PreprocessFeatures(object):
-
-    def fit(self, X, y=None):
-        return self
-
-    def untokenize(self, document):
-        return ' '.join(document)
-
-    def transform(self, X):
-        return [self.untokenize(document) for document in X]
 
 
 def check_discourse_matches(tokens, markers):
@@ -291,46 +294,6 @@ def check_discourse_matches(tokens, markers):
     return {"score": unigram_matches + bigram_matches + trigram_matches + fourgram_matches + fivegram_matches}
 
 
-class DiscourseFeatures(BaseEstimator, TransformerMixin):
-
-    def fit(self, x, y=None):
-        return self
-
-    def _get_features(self, doc):
-        discourse_score = check_discourse_matches(doc, markers)
-        return discourse_score
-
-    def transform(self, raw_documents):
-        features = []
-        bar = Bar('Processing ', max=len(raw_documents))
-        for doc in raw_documents:
-            bar.next()
-            features.append(self._get_features(doc))
-        return features
-
-        # return [self._get_features(doc) for doc in raw_documents]
-
-
-discourse_vec = Pipeline(
-    [
-        ('feat', DiscourseFeatures()), ('vec', DictVectorizer())
-    ]
-)
-
-
-class LexicalComplexity(BaseEstimator, TransformerMixin):
-
-    def fit(self, x, y=None):
-        return self
-
-    def _get_features(self, doc):
-        lexical_score = type_token_ratio(doc)
-        return lexical_score
-
-    def transform(self, raw_documents):
-        return [self._get_features(doc) for doc in raw_documents]
-
-
 def type_token_ratio(document, regex=False):
     """
         Input: tokenize document 
@@ -347,8 +310,29 @@ def type_token_ratio(document, regex=False):
     return {"Type-token-ratio": num_of_unique_tokens/num_of_tokens}
 
 
+def regex_tokeniser(x):
+    tokenizer = RegexpTokenizer('[^ ]+')
+    return tokenizer.tokenize(x)
+
+
 lexical_complexity_vec = Pipeline(
     [
         ('feat', LexicalComplexity()), ('vec', DictVectorizer())
     ]
 )
+
+
+discourse_vec = Pipeline(
+    [
+        ('feat', DiscourseFeatures()), ('vec', DictVectorizer())
+    ]
+)
+
+coherence_vec = Pipeline(
+    [
+        ('feat', CoherenceFeatures()), ('vec', DictVectorizer())
+    ]
+)
+
+lrec_vec = CountVectorizer(max_features=None, lowercase=False,
+                           ngram_range=(1, 2), stop_words=None, token_pattern='[^ ]+')
