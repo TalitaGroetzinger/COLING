@@ -59,46 +59,35 @@ def join_data(x):
     return ' '.join(x)
 
 
-def get_paths(use_all=True, use_base_context=True):
-    if use_all:
-        path_to_dir = '../classification-scripts/noun-modifications'
-        if use_base_context:
-            file_morph = 'base-target'
-            path_to_train = "{0}/noun-modifications-train-{1}.json".format(
-                path_to_dir, file_morph)
-            path_to_dev = "{0}/noun-modifications-dev-{1}.json".format(
-                path_to_dir, file_morph)
-            path_to_test = "{0}/noun-modifications-test-{1}.json".format(
-                path_to_dir, file_morph)
-            print("using the files that have base context")
-            return path_to_train, path_to_dev, path_to_test
-        else:
-            path_to_train = "{0}/noun-modifications-train-5-new-lines.json".format(
-                path_to_dir)
-            path_to_dev = "{0}/noun-modifications-dev-5-new-lines.json".format(
-                path_to_dir)
-            path_to_test = "{0}/noun-modifications-test-5-new-lines.json".format(
-                path_to_dir)
-            return path_to_train, path_to_dev, path_to_test
-    else:
-        path_to_dir_diff = '../classification-scripts/different-noun-modifications'
-        path_to_train_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
-            path_to_dir_diff)
-        path_to_dev_diff = '{0}/different-noun-modifications/DIFF-NOUN-MODIFICATIONS-DEV-5-new.JSON'.format(
-            path_to_dir_diff)
-        path_to_test_diff = '{0}/DIFF-NOUN-MODIFICATIONS-TEST-5-new.JSON'.format(
-            path_to_dir_diff)
+def get_paths():
+    path_to_dir = '../classification-scripts/noun-modifications'
+    path_to_test = '{0}/noun-modifications-test-v2-new.json'.format(
+        path_to_dir)
+    path_to_train = '{0}/noun-modifications-train-v2-new.json'.format(
+        path_to_dir)
+    path_to_dev = '{0}/noun-modifications-dev-v2-new.json'.format(path_to_dir)
+    return path_to_train, path_to_dev, path_to_test
 
-        # get same-noun modifications
-        path_to_dir_same = '../classification-scripts/same-noun-modifications'
-        path_to_train_same = '{0}/SAME-NOUN-MODIFICATIONS-TRAIN-5-new.JSON'.format(
-            path_to_dir_same)
-        path_to_dev_same = '{0}/SAME-NOUN-MODIFICATIONS-DEV-5-new.JSON'.format(
-            path_to_dir_same)
-        path_to_test_same = '{0}/SAME-NOUN-MODIFICATIONS-TEST-5-new.JSON'.format(
-            path_to_dir_same)
 
-        return path_to_train_diff, path_to_dev_diff, path_to_test_diff, path_to_train_same, path_to_dev_same, path_to_test_same
+def regroup_context(context):
+    merged_context = [value if type(value) == str else ' '.join(value)
+                      for key, value in context.items()]
+    return ' '.join(merged_context)
+
+
+def regroup_context_target(target_context, source_context):
+    context = []
+    left_context = source_context['left']
+    current_line = target_context['current']
+    right_context = source_context['right']
+    context.append(left_context)
+    context.append(current_line)
+    context.append(right_context)
+
+    new = [elem if type(elem) == str else ' '.join(elem)
+           for elem in context]
+
+    return ' '.join(new)
 
 
 def get_xy(list_of_wikihow_instances, use_context='context'):
@@ -107,38 +96,32 @@ def get_xy(list_of_wikihow_instances, use_context='context'):
     for wikihow_instance in list_of_wikihow_instances:
         if use_context == 'context':
             print("use context level")
-            #source_context = wikihow_instance['Source_Context_5_Processed']
-            #target_context = wikihow_instance['Target_Context_5_Processed']
+            # source_context = wikihow_instance['Source_Context_5_Processed']
+            # target_context = wikihow_instance['Target_Context_5_Processed']
             source_context = wikihow_instance['Source_Context_5_Processed']
             target_context = wikihow_instance['Target_Context_5_Processed']
             X.append(source_context)
             Y.append(0)
             X.append(target_context)
             Y.append(1)
-        elif use_context == 'context-matches':
-            print("use context plus matches")
-            source_context = wikihow_instance['Source_Context_5_Processed']
-            target_context = wikihow_instance['Target_Context_5_Processed']
-            matches = wikihow_instance['PPDB_Matches']
-
-            new_source = mark_cases(source_context, matches, source=True)
-            new_target = mark_cases(target_context, matches, source=False)
-
-            X.append(new_source)
-            Y.append(0)
-            X.append(new_target)
-            Y.append(1)
-        elif use_context == 'base':
-            print("use base contexts")
-            source_context = wikihow_instance['Source_Context_5_Processed']
-            target_context = wikihow_instance['Source_Target_base_Processed']
+        elif use_context == 'context-new':
+            #print("use new context ... ")
+            source_context = regroup_context(
+                wikihow_instance['Source_Context_5'])
+            # change this line
+            # print(source_context)
+            target_context = regroup_context_target(
+                wikihow_instance['Target_Context_5'], wikihow_instance['Source_Context_5'])
+            # print(target_context)
+            # print('\n')
 
             X.append(source_context)
             Y.append(0)
-            X.append(new_target)
+            X.append(target_context)
             Y.append(1)
+
         else:
-            #print("use sentence-level")
+            print("use sentence-level")
             source_line = wikihow_instance['Source_Line']
             target_line = wikihow_instance['Target_Line']
             X.append(source_line)
@@ -174,22 +157,25 @@ def regex_tokeniser(x):
 
 def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
     # don't forget to remove the __REV__ tags in the from coherence_vec
+    # count_vec = CountVectorizer(max_features=None, lowercase=False,
+    #                           ngram_range = (1, 2), tokenizer = get_length_features_context, preprocessor = regex_tokeniser)
+
     count_vec = TfidfVectorizer(max_features=None, lowercase=False,
-                                ngram_range=(1, 2), token_pattern='[^ ]+')\
-        # count_vec = CountVectorizer(max_features=None, lowercase=False,
-    #                            ngram_range=(1, 2), tokenizer=word_tokenize)
+                                ngram_range=(1, 2), tokenizer=word_tokenize)
     print("fit data ... ")
 
     vec = FeatureUnion(
         [
-            ('feat', count_vec), ('vec', discourse_vec)
+            ('feat', count_vec), ('vec', lexical_complexity_vec)
         ]
     )
 
+    print(vec)
     Xtrain_fitted = vec.fit_transform(Xtrain)
     Xdev_fitted = vec.transform(Xdev)
     # ------------------------------------------------
-
+    # normalize(Xtrain_fitted)
+    # normalize(Xdev_fitted)
     # classification
     classifier = MultinomialNB()
     classifier.fit(Xtrain_fitted, Ytrain)
@@ -239,10 +225,10 @@ def select_vectorizer(vec='discourse'):
 def main():
     # get different nouns
     # use_all=false to get path_to_train_diff, path_to_dev_diff, path_to_test_diff, path_to_train_same, path_to_dev_same, path_to_test_same
-    train, dev, test = get_paths(use_all=True)
+    train, dev, test = get_paths()
 
     Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest = get_data(
-        train, dev, test, context_value='base')
+        train, dev, test, context_value='context-new')
 
     list_of_good_predictions, list_of_bad_predictions = train_classifier(
         Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest)

@@ -12,50 +12,10 @@ from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
 import pandas as pd
 from nltk.tokenize import word_tokenize
-from features import get_length_features, get_postags, tokenize, pos_tags_and_length, get_length_features_context, coherence_vec, discourse_vec, lrec_vec, lexical_complexity_vec
+from features import *
 from sklearn.naive_bayes import MultinomialNB
 import pickle
 from progress.bar import Bar
-
-
-class ItemSelector(BaseEstimator, TransformerMixin):
-    """For data grouped by feature, select subset of data at a provided key.
-
-    The data is expected to be stored in a 2D data structure, where the first
-    index is over features and the second is over samples.  i.e.
-
-    >> len(data[key]) == n_samples
-
-    Please note that this is the opposite convention to scikit-learn feature
-    matrixes (where the first index corresponds to sample).
-
-    ItemSelector only requires that the collection implement getitem
-    (data[key]).  Examples include: a dict of lists, 2D numpy array, Pandas
-    DataFrame, numpy record array, etc.
-
-    >> data = {'a': [1, 5, 2, 5, 2, 8],
-               'b': [9, 4, 1, 4, 1, 3]}
-    >> ds = ItemSelector(key='a')
-    >> data['a'] == ds.transform(data)
-
-    ItemSelector is not designed to handle data grouped by sample.  (e.g. a
-    list of dicts).  If your data is structured this way, consider a
-    transformer along the lines of `sklearn.feature_extraction.DictVectorizer`.
-
-    Parameters
-    ----------
-    key : hashable, required
-        The key corresponding to the desired value in a mappable.
-    """
-
-    def __init__(self, key):
-        self.key = key
-
-    def fit(self, x, y=None):
-        return self
-
-    def transform(self, data_dict):
-        return data_dict[self.key]
 
 
 def regroup_context(context, tokenize=True):
@@ -63,7 +23,7 @@ def regroup_context(context, tokenize=True):
         value) for key, value in context.items()]
     if tokenize:
         new_context = ' '.join(merged_context)
-        return [word_tokenize(sent) for sent in new_context]
+        return word_tokenize(new_context)
     else:
         return new_context
 
@@ -128,7 +88,7 @@ def train_data(train, dev, test):
 
     vec2 = Pipeline([
         ('selector', ItemSelector(key='X_Context')
-         ), ('count_vec', lexical_complexity_vec),
+         ), ('count_vec', discourse_vec),
     ])
     vec = FeatureUnion([('vec1', vec1), ('vec2', vec2)])
     print("fit data ")
@@ -164,23 +124,16 @@ def train_data(train, dev, test):
 
 
 def main():
-    path_to_train, path_to_dev, path_to_test = get_paths()
-    with open(path_to_dev, 'r') as json_in:
-        dev = json.load(json_in)
-    with open(path_to_train, 'r') as json_in:
-        train = json.load(json_in)
-    with open(path_to_test, 'r') as json_in:
-        test = json.load(json_in)
+    with open("train_tok.pickle", "rb") as train_in:
+        train = pickle.load(train_in)
 
-    print("make one for dev")
-    make_df_save(dev, "dev_tok.pickle")
-    print("make one for train")
-    make_df_save(train, "train_tok.pickle")
-    print("make one for test")
+    with open("dev_tok.pickle", "rb") as dev_in:
+        dev = pickle.load(dev_in)
 
-    make_df_save(test, "test_tok.pickle")
+    with open("test_tok.pickle", "rb") as test_in:
+        test = pickle.load(test_in)
 
-#train_data(train, dev, test)
+    train_data(train, dev, test)
 
 
 main()

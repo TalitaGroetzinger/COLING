@@ -9,6 +9,7 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 import pickle
+from progress.bar import Bar
 
 path_to_markers = '../data/discourse_markers.pickle'
 with open(path_to_markers, 'rb') as pickle_in:
@@ -37,6 +38,46 @@ class MeanEmbeddingVectorizer(object):
                     or [np.zeros(self.dim)], axis=0)
             for words in X
         ])
+
+
+class ItemSelector(BaseEstimator, TransformerMixin):
+    """For data grouped by feature, select subset of data at a provided key.
+
+    The data is expected to be stored in a 2D data structure, where the first
+    index is over features and the second is over samples.  i.e.
+
+    >> len(data[key]) == n_samples
+
+    Please note that this is the opposite convention to scikit-learn feature
+    matrixes (where the first index corresponds to sample).
+
+    ItemSelector only requires that the collection implement getitem
+    (data[key]).  Examples include: a dict of lists, 2D numpy array, Pandas
+    DataFrame, numpy record array, etc.
+
+    >> data = {'a': [1, 5, 2, 5, 2, 8],
+               'b': [9, 4, 1, 4, 1, 3]}
+    >> ds = ItemSelector(key='a')
+    >> data['a'] == ds.transform(data)
+
+    ItemSelector is not designed to handle data grouped by sample.  (e.g. a
+    list of dicts).  If your data is structured this way, consider a
+    transformer along the lines of `sklearn.feature_extraction.DictVectorizer`.
+
+    Parameters
+    ----------
+    key : hashable, required
+        The key corresponding to the desired value in a mappable.
+    """
+
+    def __init__(self, key):
+        self.key = key
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, data_dict):
+        return data_dict[self.key]
 
 
 def get_length_features(document, thresshold=15):
@@ -159,7 +200,7 @@ def check_discourse_matches(tokens, markers):
     print("-----")
     # Later zal dit meteen het document zijn/de tokens.
     #tokens = word_tokenize(tokens)
-    tokens = regex_tokeniser(tokens)
+    #tokens = regex_tokeniser(tokens)
     for token in tokens:
         if token in markers.keys():
             if 'fivegrams' in markers[token].keys():
@@ -169,9 +210,9 @@ def check_discourse_matches(tokens, markers):
                     if fivegram in markers[token]['fivegrams']:
                         fivegram_matches += 1
                         total += 1
-                        print(fivegram_matches, '#',
-                              markers[token]['fivegrams'])
-                        print("\n")
+                        # print(fivegram_matches, '#',
+                        #      markers[token]['fivegrams'])
+                        # print("\n")
 
             if 'fourgrams' in markers[token].keys():
                 fourgrams = [[tokens[i], tokens[i+1], tokens[i+2],
@@ -180,8 +221,8 @@ def check_discourse_matches(tokens, markers):
                     if fourgram in markers[token]['fourgrams']:
                         fourgram_matches += 1
                         total += 1
-                        print(fourgram, '#', markers[token]['fourgrams'])
-                        print("\n")
+                        # print(fourgram, '#', markers[token]['fourgrams'])
+                        # print("\n")
 
             if 'trigrams' in markers[token].keys():
                 trigrams = [[tokens[i], tokens[i+1], tokens[i+2]]
@@ -190,8 +231,8 @@ def check_discourse_matches(tokens, markers):
                     if trigram in markers[token]['trigrams']:
                         trigram_matches += 1
                         total += 1
-                        print(trigram, '#', markers[token]['trigrams'])
-                        print("\n")
+                        # print(trigram, '#', markers[token]['trigrams'])
+                        # print("\n")
 
             if 'bigrams' in markers[token].keys():
                 bigrams = [[tokens[i], tokens[i+1]]
@@ -200,10 +241,10 @@ def check_discourse_matches(tokens, markers):
                     if bigram in markers[token]['bigrams']:
                         bigram_matches += 1
                         total += 1
-                        print(bigram, markers[token]['bigrams'])
-                        print("\n")
+                        #print(bigram, markers[token]['bigrams'])
+                        # print("\n")
             if 'unigrams' in markers[token].keys():
-                print(token, '#', markers[token]['unigrams'])
+                # print(token, '#', markers[token]['unigrams'])
                 unigram_matches += 1
                 total += 1
     return {"score": unigram_matches + bigram_matches + trigram_matches + fourgram_matches + fivegram_matches}
@@ -219,7 +260,14 @@ class DiscourseFeatures(BaseEstimator, TransformerMixin):
         return discourse_score
 
     def transform(self, raw_documents):
-        return [self._get_features(doc) for doc in raw_documents]
+        features = []
+        bar = Bar('Processing ', max=len(raw_documents))
+        for doc in raw_documents:
+            bar.next()
+            features.append(self._get_features(doc))
+        return features
+
+        # return [self._get_features(doc) for doc in raw_documents]
 
 
 discourse_vec = Pipeline(
