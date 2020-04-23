@@ -1,10 +1,6 @@
 import numpy as np
 import json
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.datasets import fetch_20newsgroups
-from sklearn.datasets.twenty_newsgroups import strip_newsgroup_footer
-from sklearn.datasets.twenty_newsgroups import strip_newsgroup_quoting
-from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report
@@ -77,7 +73,12 @@ def make_df_save(json_file, name_to_write):
         pickle.dump(df_dict, pickle_out)
 
 
+def dummy(x):
+    return x
+
+
 def train_data(train, dev, test):
+    """
     count_vec = TfidfVectorizer(max_features=None, lowercase=False,
                                 ngram_range=(1, 2), tokenizer=word_tokenize)
 
@@ -91,6 +92,15 @@ def train_data(train, dev, test):
          ), ('count_vec', discourse_vec),
     ])
     vec = FeatureUnion([('vec1', vec1), ('vec2', vec2)])
+    """
+
+    count_vec = TfidfVectorizer(preprocessor=dummy, tokenizer=dummy)
+
+    vec = Pipeline([
+        ('selector', ItemSelector(key='X_Context_Length')
+         ), ('count_vec', count_vec),
+    ])
+
     print("fit data ")
     Xtrain_fitted = vec.fit_transform(train)
     Xdev_fitted = vec.transform(dev)
@@ -124,13 +134,13 @@ def train_data(train, dev, test):
 
 
 def main():
-    with open("noun-modifications/train_tok.pickle", "rb") as train_in:
+    with open("noun-modifications/train_tok_new.pickle", "rb") as train_in:
         train = pickle.load(train_in)
 
-    with open("noun-modifications/dev_tok.pickle", "rb") as dev_in:
+    with open("noun-modifications/dev_tok_new.pickle", "rb") as dev_in:
         dev = pickle.load(dev_in)
 
-    with open("./noun-modifications/test_tok.pickle", "rb") as test_in:
+    with open("./noun-modifications/test_tok_new.pickle", "rb") as test_in:
         test = pickle.load(test_in)
 
     train_data(train, dev, test)
