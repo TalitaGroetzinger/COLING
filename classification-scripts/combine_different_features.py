@@ -124,13 +124,13 @@ def train_data(train, dev, test):
 
 
 def main():
-    with open("train_tok.pickle", "rb") as train_in:
+    with open("noun-modifications/train_tok.pickle", "rb") as train_in:
         train = pickle.load(train_in)
 
-    with open("dev_tok.pickle", "rb") as dev_in:
+    with open("noun-modifications/dev_tok.pickle", "rb") as dev_in:
         dev = pickle.load(dev_in)
 
-    with open("test_tok.pickle", "rb") as test_in:
+    with open("./noun-modifications/test_tok.pickle", "rb") as test_in:
         test = pickle.load(test_in)
 
     train_data(train, dev, test)
