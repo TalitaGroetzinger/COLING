@@ -108,7 +108,7 @@ def dummy(x):
 
 
 def train_data(train, dev, test):
-
+    """
     count_vec = TfidfVectorizer(max_features=None, lowercase=False,
                                 ngram_range=(1, 2), tokenizer=word_tokenize)
 
@@ -120,6 +120,10 @@ def train_data(train, dev, test):
 
     vec = FeatureUnion(
         [('vec1', count_vec_pipe), ('vec2', article_length_vec)])
+    """
+
+    vec = Pipeline([('selector', ItemSelector(key='X_in_context_length')
+                     ), ('tfidf', TfidfVectorizer(preprocessor=dummy, tokenizer=dummy, ngram_range=(1, 2)))])
 
     print("fit data ")
     Xtrain_fitted = vec.fit_transform(train)
@@ -128,6 +132,7 @@ def train_data(train, dev, test):
     # normalize(Xtrain_fitted)
     # normalize(Xdev_fitted)
     # classification
+
     print("classify")
     classifier = MultinomialNB()
     classifier.fit(Xtrain_fitted, train["Y"])
@@ -163,7 +168,7 @@ def main():
 
     with open("./noun-modifications/test_tok_new.pickle", "rb") as test_in:
         test = pickle.load(test_in)
-    """
+
 
     path_to_train, path_to_dev, path_to_test = get_paths()
 
@@ -186,15 +191,25 @@ def main():
     test = make_df(test_open)
     test = get_average(test)
 
-    """
+
     with open("./noun-modifications/train_article.pickle", "wb") as pickle_in:
         pickle.dump(train, pickle_in)
     with open("./noun-modifications/dev_article.pickle", "wb") as pickle_in:
         pickle.dump(dev, pickle_in)
     with open("./noun-modifications/test_article.pickle", "wb") as pickle_in:
         pickle.dump(test, pickle_in)
-    """
+
     #train_data(train, dev, test)
+    """
+
+    with open("./noun-modifications/train_tok_alength.pickle", "rb") as pickle_in:
+        train = pickle.load(pickle_in)
+    with open("./noun-modifications/dev_tok_alength.pickle", "rb") as pickle_in:
+        dev = pickle.load(pickle_in)
+    with open("./noun-modifications/test_tok_alength", "rb") as pickle_in:
+        test = pickle.load(pickle_in)
+
+    train_data(train, dev, test)
 
 
 main()
