@@ -243,7 +243,7 @@ def check_discourse_matches(tokens, markers):
     fivegram_matches = 0
     print("-----")
     # Later zal dit meteen het document zijn/de tokens.
-    #tokens = word_tokenize(tokens)
+    tokens = word_tokenize(tokens)
     #tokens = regex_tokeniser(tokens)
     for token in tokens:
         if token in markers.keys():

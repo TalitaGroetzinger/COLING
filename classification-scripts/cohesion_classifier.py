@@ -60,7 +60,7 @@ def join_data(x):
 
 
 def get_paths():
-    path_to_dir = '../classification-scripts/noun-modifications'
+    path_to_dir = './noun-modifications'
     path_to_test = '{0}/noun-modifications-test-v2-new.json'.format(
         path_to_dir)
     path_to_train = '{0}/noun-modifications-train-v2-new.json'.format(
@@ -162,15 +162,14 @@ def train_classifier(Xtrain, Ytrain, Xdev, Ydev, Xtest, Ytest):
 
     count_vec = TfidfVectorizer(max_features=None, lowercase=False,
                                 ngram_range=(1, 2), tokenizer=word_tokenize)
-    print("fit data ... ")
+    #print("fit data ... ")
 
     vec = FeatureUnion(
         [
-            ('feat', count_vec), ('vec', lexical_complexity_vec)
+            ('feat', count_vec), ('vec', discourse_vec)
         ]
     )
 
-    print(vec)
     Xtrain_fitted = vec.fit_transform(Xtrain)
     Xdev_fitted = vec.transform(Xdev)
     # ------------------------------------------------
