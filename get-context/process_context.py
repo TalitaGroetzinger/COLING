@@ -1,6 +1,6 @@
 import json
 
-with open('test-dict-format.json', 'r') as json_in:
+with open('train-dict-format.json', 'r') as json_in:
     wikihow_articles = json.load(json_in)
 
 
@@ -42,7 +42,7 @@ def get_line_and_file(filename, line_nr, collection):
 
 def main():
     #path_to_data = '../classification-scripts/noun-modifications/noun-modifications-test-5-new-lines.json'
-    path_to_data = 'noun-modifications-test-5-new-lines.json'
+    path_to_data = 'noun-modifications-train-5-new-lines.json'
     with open(path_to_data, 'r') as json_in:
         list_of_wikihow_instances = json.load(json_in)
 
@@ -68,7 +68,7 @@ def main():
 
     assert len(new_instances) == len(list_of_wikihow_instances)
 
-    with open('noun-modifications-test-v1.json', 'w') as json_out:
+    with open('noun-modifications-train-v1-length.json', 'w') as json_out:
         json.dump(new_instances, json_out)
 
 
