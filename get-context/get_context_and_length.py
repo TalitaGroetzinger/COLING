@@ -67,7 +67,7 @@ def get_full_article(article_database, filename, line_nr='400'):
         tokens = word_tokenize(sents)
         tokenized += tokens
     res = compute_length(tokenized)
-    print(res)
+    return res
 
 
 if __name__ == "__main__":
