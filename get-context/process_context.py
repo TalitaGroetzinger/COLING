@@ -1,6 +1,8 @@
 import json
 from get_context_and_length import *
+from progress.bar import Bar
 
+print("read databse ..")
 with open('train-dict-format.json', 'r') as json_in:
     wikihow_articles = json.load(json_in)
 
@@ -44,13 +46,16 @@ def get_line_and_file(filename, line_nr, collection):
 def main():
     #path_to_data = '../classification-scripts/noun-modifications/noun-modifications-test-5-new-lines.json'
     path_to_data = 'noun-modifications-train-5-new-lines.json'
+    print("read {0}".format(path_to_data))
     with open(path_to_data, 'r') as json_in:
         list_of_wikihow_instances = json.load(json_in)
 
     collection = wikihow_articles
 
     new_instances = []
+    bar = Bar('Processing', max=len(list_of_wikihow_instances))
     for wikihow_instance in list_of_wikihow_instances:
+        bar.next()
         source_line_nr = wikihow_instance['Source_Line_Nr'][0]
         target_line_nr = wikihow_instance['Target_Line_Nr'][-1]
 
@@ -59,7 +64,7 @@ def main():
 
         source_line_nr_content = get_line_and_file(
             filename, str(source_line_nr), collection)
-        print(source_line_nr_content)
+        # print(source_line_nr_content)
         wikihow_instance['Source_Context_New'] = source_line_nr_content
 
         target_line_nr_content = get_line_and_file(
@@ -77,7 +82,7 @@ def main():
         wikihow_instance['Target_Article_info'] = target_article_info
 
         new_instances.append(wikihow_instance)
-
+    bar.finish()
     assert len(new_instances) == len(list_of_wikihow_instances)
 
     with open('noun-modifications-train-v1-length.json', 'w') as json_out:
