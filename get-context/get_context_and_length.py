@@ -1,7 +1,23 @@
 import json
+import re
+from nltk.tokenize import word_tokenize
 
 with open('../classification-scripts/subset-train.json', 'r') as json_in:
     content = json.load(json_in)
+
+
+def remove_html_tags(text):
+    """Remove html tags from a string"""
+    import re
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
+
+
+def compute_length(tokenized_text):
+    num_of_tokens = len(tokenized_text)
+    unique_tokens = list(set(tokenized_text))
+    num_of_unique_tokens = len(unique_tokens)
+    return {"Type-token-ratio": num_of_unique_tokens/num_of_tokens, "Length": num_of_tokens}
 
 
 def get_left(article_database, filename, line_nr, sentence_nrs):
@@ -43,7 +59,15 @@ def get_full_article(article_database, filename, line_nr='400'):
     right_content = get_right(
         article_database, filename, line_nr, sentence_nrs)
 
-    print(left_content + right_content)
+    full_article = left_content + right_content
+    # clean the html tags
+    full_article_cleaned = [remove_html_tags(sents) for sents in full_article]
+    tokenized = []
+    for sents in full_article_cleaned:
+        tokens = word_tokenize(sents)
+        tokenized += tokens
+    res = compute_length(tokenized)
+    print(res)
 
 
 def main():
