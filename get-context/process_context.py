@@ -1,4 +1,5 @@
 import json
+from get_context_and_length import *
 
 with open('train-dict-format.json', 'r') as json_in:
     wikihow_articles = json.load(json_in)
@@ -64,6 +65,17 @@ def main():
         target_line_nr_content = get_line_and_file(
             filename, str(target_line_nr), collection)
         wikihow_instance['Target_Context_New'] = target_line_nr_content
+
+        # get the length of the source article
+        source_article_info = get_full_article(
+            collection, filename, str(source_line_nr))
+        wikihow_instance['Source_Article_info'] = source_article_info
+
+        # get the length of the target article
+        target_article_info = get_full_article(
+            collection, filename, str(target_line_nr))
+        wikihow_instance['Target_Article_info'] = target_article_info
+
         new_instances.append(wikihow_instance)
 
     assert len(new_instances) == len(list_of_wikihow_instances)
