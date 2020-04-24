@@ -47,7 +47,7 @@ def get_right(article_database, filename, line_nr, sentence_nrs):
     return after_lines
 
 
-def get_full_article(article_database, filename, line_nr='400'):
+def get_full_article(article_database, filename, line_nr):
     sentence_nrs = [key for key in article_database[filename].keys()]
     # Take everything above the content that you want including the source or target line.
     left_content = get_left(article_database, filename, line_nr, sentence_nrs)
@@ -69,7 +69,7 @@ def get_full_article(article_database, filename, line_nr='400'):
 
 if __name__ == "__main__":
     with open('../classification-scripts/subset-train.json', 'r') as json_in:
-    content = json.load(json_in)
+        content = json.load(json_in)
 
     subset_filenames = ['Be_Resourceful.txt', 'Create_a_Well_Rounded_Approach_for_Getting_Rid_of_Acne.txt', 'Get_a_Big_Warhammer_Bitz_Box.txt', 'Improve_Your_Class_Ranking.txt', 'Clean_a_Sticking_Delta_Soap_Dispenser.txt',
                         'Graciously_Accept_an_Unattractive_Gift_from_the_in_Laws.txt', 'Pay_Off_Student_Loans.txt', "Edit_a_Friend's_Essay.txt", 'Write_Apocalyptic_Stories.txt', 'Make_Your_Room_Look_Nice.txt', 'Deal_with_Sexual_Abuse.txt', 'Have_a_Larger_Vocabulary.txt']
