@@ -43,7 +43,8 @@ def make_df(json_file):
         # add the source components
         df_dict["X_Line"].append(wikihow_instance['Source_Line'])
 
-        type_token_ratio_source = wikihow_instance['Source_Article_info']['Type-token-ratio']
+        type_token_ratio_source = wikihow_instance['Source_Article_info']['Length']
+
         df_dict["X_article_info"].append(
             {"type_token_ratio": type_token_ratio_source})
 
@@ -51,13 +52,35 @@ def make_df(json_file):
         # add the target components
         df_dict["X_Line"].append(wikihow_instance['Target_Line'])
 
-        type_token_ratio_target = wikihow_instance['Target_Article_info']['Type-token-ratio']
+        type_token_ratio_target = wikihow_instance['Target_Article_info']['Length']
+
         df_dict["X_article_info"].append(
             {"type_token_ratio": type_token_ratio_target})
 
         df_dict["Y"].append(1)
     bar.finish()
     return df_dict
+
+
+def get_average(dict_file):
+    lens = []
+
+    for elem in dict_file['X_article_info']:
+        lens.append(elem['type_token_ratio'])
+
+    mean = np.mean(lens)
+    print(mean)
+
+    len_info = []
+    for elem in dict_file['X_article_info']:
+        if elem['type_token_ratio'] > mean:
+            value = 'long'
+        else:
+            value = 'short'
+        len_info.append({"article_length": value})
+
+    dict_file['X_article_info_new'] = len_info
+    return dict_file
 
 
 def make_df_save(json_file, name_to_write):
@@ -85,21 +108,6 @@ def dummy(x):
 
 
 def train_data(train, dev, test):
-    """
-    count_vec = TfidfVectorizer(max_features=None, lowercase=False,
-                                ngram_range=(1, 2), tokenizer=word_tokenize)
-
-    vec1 = Pipeline([
-        ('selector', ItemSelector(key='X_Line')
-         ), ('count_vec', count_vec),
-    ])
-
-    vec2 = Pipeline([
-        ('selector', ItemSelector(key='X_Context')
-         ), ('count_vec', discourse_vec),
-    ])
-    vec = FeatureUnion([('vec1', vec1), ('vec2', vec2)])
-    """
 
     count_vec = TfidfVectorizer(max_features=None, lowercase=False,
                                 ngram_range=(1, 2), tokenizer=word_tokenize)
@@ -107,7 +115,7 @@ def train_data(train, dev, test):
     count_vec_pipe = Pipeline([('selector', ItemSelector(key='X_Line')
                                 ), ('tfidf', count_vec)])
 
-    article_length_vec = Pipeline([('selector', ItemSelector(key='X_article_info')
+    article_length_vec = Pipeline([('selector', ItemSelector(key='X_article_info_new')
                                     ), ('length', DictVectorizer())])
 
     vec = FeatureUnion(
@@ -169,10 +177,24 @@ def main():
         test_open = json.load(json_in)
 
     train = make_df(train_open)
-    dev = make_df(dev_open)
-    test = make_df(test_open)
 
-    train_data(train, dev, test)
+    train = get_average(train)
+
+    dev = make_df(dev_open)
+    dev = get_average(dev)
+
+    test = make_df(test_open)
+    test = get_average(test)
+
+    """
+    with open("./noun-modifications/train_article.pickle", "wb") as pickle_in:
+        pickle.dump(train, pickle_in)
+    with open("./noun-modifications/dev_article.pickle", "wb") as pickle_in:
+        pickle.dump(dev, pickle_in)
+    with open("./noun-modifications/test_article.pickle", "wb") as pickle_in:
+        pickle.dump(test, pickle_in)
+    """
+    #train_data(train, dev, test)
 
 
 main()
