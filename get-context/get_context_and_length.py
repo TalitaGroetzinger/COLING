@@ -23,10 +23,10 @@ def get_left(article_database, filename, line_nr, sentence_nrs):
 
     before_lines = []
     for line_nr in above_line_nrs:
-        line = content[filename][line_nr]
+        line = article_database[filename][line_nr]
         # check if there is a timestamp
         if '## Timestamp' in line:
-            print("Timestamp found ..", line_nr)
+            #print("Timestamp found ..", line_nr)
             break
         before_lines.append(line)
     return before_lines[::-1]
@@ -39,9 +39,9 @@ def get_right(article_database, filename, line_nr, sentence_nrs):
     after_lines = []
 
     for line_nr in after_line_nrs:
-        line = content[filename][line_nr]
+        line = article_database[filename][line_nr]
         if '## Timestamp' in line:
-            print("Timestamp found ..", line_nr)
+            #print("Timestamp found ..", line_nr)
             break
         after_lines.append(line)
     return after_lines
