@@ -74,5 +74,7 @@ if __name__ == "__main__":
     subset_filenames = ['Be_Resourceful.txt', 'Create_a_Well_Rounded_Approach_for_Getting_Rid_of_Acne.txt', 'Get_a_Big_Warhammer_Bitz_Box.txt', 'Improve_Your_Class_Ranking.txt', 'Clean_a_Sticking_Delta_Soap_Dispenser.txt',
                         'Graciously_Accept_an_Unattractive_Gift_from_the_in_Laws.txt', 'Pay_Off_Student_Loans.txt', "Edit_a_Friend's_Essay.txt", 'Write_Apocalyptic_Stories.txt', 'Make_Your_Room_Look_Nice.txt', 'Deal_with_Sexual_Abuse.txt', 'Have_a_Larger_Vocabulary.txt']
     for filename in subset_filenames:
-        get_full_article(content, filename)
+        # line nr dummy
+        line_nr = '400'
+        get_full_article(content, filename, line_nr)
         break
