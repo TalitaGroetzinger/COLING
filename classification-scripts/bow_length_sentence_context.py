@@ -1,3 +1,8 @@
+# This script was used to make a dev, test and train set with a special column
+# called X_Context_Length. This contains all the tokenized source or sentence lines and
+# the length of the context. The instances can then directly be feed into the Tfidftokenizer.
+
+
 import numpy as np
 import json
 from sklearn.base import BaseEstimator, TransformerMixin
