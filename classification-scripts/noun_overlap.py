@@ -1,3 +1,5 @@
+# This script is used to create dict that also contains the "marked context"
+
 import json
 import nltk
 from nltk.tokenize import word_tokenize
@@ -61,6 +63,24 @@ def process_context(context, line):
     return sentence_in_context
 
 
+def process_context_base_everywhere(source_context, target_line):
+    left_context = source_context['left']
+    right_context = source_context['right']
+
+    if type(source_context['left']) == str:
+        left_context = left_context
+    else:
+        left_context = ' '.join(left_context)
+
+    if type(source_context['right']) == str:
+        right_context = source_context['right']
+    else:
+        right_context = ' '.join(source_context['right'])
+
+    sentence_in_context = left_context + target_line + right_context
+    return sentence_in_context
+
+
 def regroup_context(context, tokenize=True):
     merged_context = [value if type(value) == str else ' '.join(
         value) for key, value in context.items()]
@@ -68,70 +88,85 @@ def regroup_context(context, tokenize=True):
         new_context = ' '.join(merged_context)
         return word_tokenize(new_context)
     else:
-        return new_context
+        return ' '.join(merged_context)
 
 
 def format_data(list_of_wikihow_instances):
-    data_dict = {"X_Line": [], "X_Context": [],
-                 "X_Context_Marked": [], "Y": []}
+    # data_dict = {"X_Line": [], "X_Context": [],
+    #             "X_Context_Marked": [], "Y": []}
+    data_dict = {"X_Line": [], "X_Line_Marked": [], "Y": []}
     bar = Bar("Processing ...", max=len(list_of_wikihow_instances))
     for wikihow_instance in list_of_wikihow_instances:
+        bar.next()
 
         matches = wikihow_instance['PPDB_Matches']
         # process everything for source
         source_context = wikihow_instance['Source_Context_5']
         source_line = wikihow_instance['Source_Line']
-        source_context = process_context(source_context, source_line)
 
-        source_context_marked = mark_cases(
-            source_context, matches, source=True)
+        source_line_marked = mark_cases(source_line, matches, source=True)
+
+        # prepare to mark context
+        # source_context_before_marked = process_context(
+        #    source_context, source_line)
+        # source_context_marked = mark_cases(
+        #    source_context_before_marked, matches, source=True)
 
         # process everything for target
         target_context = wikihow_instance['Target_Context_5']
         target_line = wikihow_instance['Target_Line']
-        target_context = process_context(target_context, target_line)
-        target_context_marked = mark_cases(
-            target_context, matches, source=False)
+        target_line_marked = mark_cases(target_line, matches, source=False)
+
+        # prepare to mark context
+        # target_context_before_marked = process_context(
+        #    target_context, target_line)
+
+        # target_context_before_marked = process_context_base_everywhere(
+        #    source_context, target_line)
+
+        # target_context_marked = mark_cases(
+        #    target_context_before_marked, matches, source=False)
 
         # add source components to dict
         data_dict["X_Line"].append(wikihow_instance['Source_Line'])
+        data_dict["X_Line_Marked"].append(source_line_marked)
 
-        data_dict["X_Context"].append(regroup_context(
-            wikihow_instance["Source_Context_5"], tokenize=False))
+        # data_dict["X_Context"].append(regroup_context(
+        #    wikihow_instance["Source_Context_5"], tokenize=False))
 
-        data_dict["X_Context_Marked"].append(source_context_marked)
+        # data_dict["X_Context_Marked"].append(source_context_marked)
         data_dict["Y"].append(0)
 
         # add target components to dict
         data_dict["X_Line"].append(wikihow_instance['Target_Line'])
+        data_dict["X_Line_Marked"].append(target_line_marked)
 
-        data_dict["X_Context"].append(regroup_context(
-            wikihow_instance["Target_Context_5"], tokenize=False))
+        # data_dict["X_Context"].append(target_context_before_marked)
 
-        data_dict["X_Context_Marked"].append(target_context_marked)
-        data_dict["Y"].append(0)
+        # data_dict["X_Context_Marked"].append(target_context_marked)
+        data_dict["Y"].append(1)
     bar.finish()
     return data_dict
 
 
 def main():
     train, dev, test = read_data()
+
     print("process train")
     train_dict = format_data(train)
 
-    with open("train_marked", "wb") as pickle_out:
+    with open("train_marked_spec_line.pickle", "wb") as pickle_out:
         pickle.dump(train_dict, pickle_out)
 
     print("process dev")
     dev_dict = format_data(dev)
 
-    with open("dev_marked", "wb") as pickle_out:
+    with open("dev_marked_spec_line.pickle", "wb") as pickle_out:
         pickle.dump(dev_dict, pickle_out)
 
     print("process test")
     test_dict = format_data(test)
-
-    with open("test_marked", "wb") as pickle_out:
+    with open("test_marked_spec_line.pickle", "wb") as pickle_out:
         pickle.dump(test_dict, pickle_out)
 
 
