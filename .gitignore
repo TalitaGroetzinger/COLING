@@ -21,3 +21,16 @@ all-wikihow/meta/dev_files.txt
 all-wikihow/meta/test_files.txt
 all-wikihow/meta/train_files.txt
 all-wikihow/wikihow_v6_with_numbers_lines.json
+ all-wikihow/splits/
+classification-scripts/Check data.ipynb
+classification-scripts/Untitled.ipynb
+classification-scripts/dev_dict.pickle
+classification-scripts/test.json
+classification-scripts/test_dict.pickle
+classification-scripts/train_dict.pickle
+get-context/list_of_filenames/dev_files_kopie.txt
+get-context/list_of_filenames/test_files_kopie.txt
+get-context/output.txt
+pytorch-models/dev_set_pytorch.json
+pytorch-models/test_set_pytorch.json
+pytorch-models/train_set_pytorch.json
