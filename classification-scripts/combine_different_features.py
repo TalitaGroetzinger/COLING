@@ -94,13 +94,24 @@ def train_data(train, dev, test):
     vec = FeatureUnion([('vec1', vec1), ('vec2', vec2)])
     """
 
-    count_vec = TfidfVectorizer(preprocessor=dummy, tokenizer=dummy)
+    count_vec = TfidfVectorizer(max_features=None, lowercase=False,
+                                ngram_range=(1, 2), tokenizer=word_tokenize)
 
-    vec = Pipeline([
-        ('selector', ItemSelector(key='X_Context_Length')
+    count_vec_dum = TfidfVectorizer(max_features=None, lowercase=False,
+                                    ngram_range=(1, 2), tokenizer=dummy, preprocessor=dummy)
+
+    vec1 = Pipeline([
+        ('selector', ItemSelector(key='X_Line')
          ), ('count_vec', count_vec),
     ])
 
+    vec2 = Pipeline([
+        ('selector', ItemSelector(key='X_Context')
+         ), ('count_vec', coherence_vec),
+    ])
+
+    vec = FeatureUnion([('vec1', vec1), ('vec2', vec2)])
+    #vec = vec1
     print("fit data ")
     Xtrain_fitted = vec.fit_transform(train)
     Xdev_fitted = vec.transform(dev)
@@ -134,14 +145,23 @@ def train_data(train, dev, test):
 
 
 def main():
-    with open("noun-modifications/train_tok_new.pickle", "rb") as train_in:
+    with open("train_dict.pickle", "rb") as train_in:
         train = pickle.load(train_in)
 
-    with open("noun-modifications/dev_tok_new.pickle", "rb") as dev_in:
+    with open("dev_dict.pickle", "rb") as dev_in:
         dev = pickle.load(dev_in)
 
-    with open("./noun-modifications/test_tok_new.pickle", "rb") as test_in:
+    with open("test_dict.pickle", "rb") as test_in:
         test = pickle.load(test_in)
+
+    # with open("./noun-modifications/train_tok_alength.pickle", "rb") as train_in:
+    #   train = pickle.load(train_in)
+
+    # with open("./noun-modifications/dev_tok_alength.pickle", "rb") as dev_in:
+    #    dev = pickle.load(dev_in)
+
+    # with open("./noun-modifications/test_tok_alength", "rb") as test_in:
+    #    test = pickle.load(test_in)
 
     train_data(train, dev, test)
 

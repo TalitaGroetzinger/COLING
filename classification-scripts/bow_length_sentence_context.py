@@ -29,7 +29,7 @@ def special_tokenizer(line, article_length_value):
     """
     # compute the length of context
     length_context = article_length_value
-    if length_context > 1309.4241171540534:
+    if length_context > 174:
         length_type = "long"
     else:
         length_type = "short"
@@ -38,31 +38,38 @@ def special_tokenizer(line, article_length_value):
     return doc
 
 
+def get_length(x):
+    x = word_tokenize(x)
+    return len(x)
+
+
 def add_to_dict(wikihow_dict):
     length_features = []
+    all_lens = []
     bar = Bar("Processing ...", max=len(wikihow_dict['X_Line']))
     for i in range(len(wikihow_dict['X_Line'])):
         bar.next()
-        doc = special_tokenizer(
-            wikihow_dict['X_Line'][i], wikihow_dict['X_article_info'][i]['type_token_ratio'])
+        context_length = get_length(wikihow_dict['X_Context_base'][i])
+        all_lens.append(context_length)
+        doc = special_tokenizer(wikihow_dict['X_Line'][i], context_length)
         length_features.append(doc)
     bar.finish()
 
-    wikihow_dict["X_in_context_length"] = length_features
-    assert len(wikihow_dict["X_in_context_length"]
+    wikihow_dict["X_Context_len"] = length_features
+    assert len(wikihow_dict["X_Context_len"]
                ) == len(wikihow_dict['X_Line'])
+    print(np.mean(all_lens))
     return wikihow_dict
 
 
 def main():
-
     # open the files
 
-    with open("./noun-modifications/train_article.pickle", "rb") as pickle_in:
+    with open("./train_dict.pickle", "rb") as pickle_in:
         train = pickle.load(pickle_in)
-    with open("./noun-modifications/dev_article.pickle", "rb") as pickle_in:
+    with open("./dev_dict.pickle", "rb") as pickle_in:
         dev = pickle.load(pickle_in)
-    with open("./noun-modifications/test_article.pickle", "rb") as pickle_in:
+    with open("./test_dict.pickle", "rb") as pickle_in:
         test = pickle.load(pickle_in)
 
     # do same for train
@@ -70,12 +77,8 @@ def main():
     dev_df = add_to_dict(dev)
 
     test_df = add_to_dict(test)
-    train_df = add_to_dict(train)
 
-    print(dev_df.keys())
-    for i in range(1):
-        print(dev_df['X_in_context_length'][i])
-        print(dev_df['X_Line'][i])
+    train_df = add_to_dict(train)
 
     with open("./noun-modifications/train_tok_alength.pickle", "wb") as pickle_in:
         pickle.dump(train_df, pickle_in)
@@ -83,6 +86,8 @@ def main():
         pickle.dump(dev_df, pickle_in)
     with open("./noun-modifications/test_tok_alength", "wb") as pickle_in:
         pickle.dump(test_df, pickle_in)
+
+    print(test_df["X_Context_len"][0:100])
 
 
 main()
