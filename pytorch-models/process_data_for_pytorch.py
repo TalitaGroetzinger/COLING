@@ -43,7 +43,9 @@ def read_data():
 def process_dict(list_of_wikihow_instances, json_to_write_filename):
     collection = []
     bar = Bar("Processing", max=len(list_of_wikihow_instances))
-    for wikihow_instance in list_of_wikihow_instances:
+    index_for_source = 0
+    index_for_target = 1
+    for c, wikihow_instance in enumerate(list_of_wikihow_instances, 1):
         bar.next()
         source_row = {}
         target_row = {}
@@ -54,6 +56,8 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         source_row["Context"] = process_context(
             wikihow_instance["Source_Context_5"], wikihow_instance["Source_Line"])
 
+        source_row["ID"] = index_for_source
+
         # process everything for target
         target_row["Filename"] = wikihow_instance["Filename"]
         target_row["Line"] = wikihow_instance["Target_Line"]
@@ -61,12 +65,16 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         target_row["Context"] = process_context(
             wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
 
+        target_row["ID"] = index_for_target
         collection.append(source_row)
         collection.append(target_row)
+        index_for_target = index_for_target + 2
+        index_for_source = index_for_source + 2
 
     bar.finish()
     # convert to dataframe
     df = pd.DataFrame(collection)
+
     df.to_json(json_to_write_filename, orient='records', lines=True)
 
 
@@ -74,7 +82,7 @@ def main():
     train_set, dev_set, test_set = read_data()
 
     # process test set
-    #process_dict(test_set, "test_set_pytorch.json")
+    process_dict(test_set, "test_set_pytorch.json")
 
     process_dict(dev_set, "dev_set_pytorch.json")
     process_dict(train_set, "train_set_pytorch.json")
