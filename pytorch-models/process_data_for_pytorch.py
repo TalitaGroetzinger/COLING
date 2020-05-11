@@ -1,6 +1,22 @@
 import json
 import pandas as pd
 from progress.bar import Bar
+from nltk.tokenize import word_tokenize
+
+
+def type_token_ratio(document):
+    """
+        Input: tokenize document 
+        Returns: the type-token-ratio for a document.
+    """
+    # first tokenize the document
+    document = word_tokenize(document)
+    all_tokens = [token for token in document]
+    num_of_tokens = len(all_tokens)
+    unique_tokens = list(set(all_tokens))
+    num_of_unique_tokens = len(unique_tokens)
+    type_token_ratio = num_of_unique_tokens/num_of_tokens
+    return type_token_ratio
 
 
 def process_context(context, current_line):
@@ -19,6 +35,16 @@ def process_context(context, current_line):
         context = left_context_plus_current + ' ' + ' '.join(context['right'])
 
     return context
+
+
+def process_context_left(context):
+    left_context = context['left']
+    right_context = context['right']
+
+    if type(context['left']) == str:
+        return left_context
+    else:
+        return ' '.join(context['left'])
 
 
 def read_data():
@@ -56,6 +82,16 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         source_row["Context"] = process_context(
             wikihow_instance["Source_Context_5"], wikihow_instance["Source_Line"])
 
+        # add type token ratio of the source_context
+        source_context = process_context(
+            wikihow_instance["Source_Context_5"], wikihow_instance["Source_Line"])
+        source_row["TTR"] = type_token_ratio(source_context)
+        source_row["leftcontext"] = process_context_left(
+            wikihow_instance["Source_Context_5"])
+
+        # add type token ratio for source context in base-context-everywhere experiment (is the same)
+        source_row["TTR_base_exp"] = type_token_ratio(source_context)
+
         source_row["ID"] = index_for_source
 
         # process everything for target
@@ -64,6 +100,19 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         target_row["Label"] = "1"
         target_row["Context"] = process_context(
             wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
+
+        target_row["leftcontext"] = process_context_left(
+            wikihow_instance["Target_Context_5"])
+
+        # add type token ratio for the target_context
+        # target_context = process_context(
+        #    wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
+        #target_row["TTR"] = type_token_ratio(target_context)
+
+        # add type token ratio for base context everywhere set-up
+        # target_context_base = process_context(
+        #    wikihow_instance["Source_Context_5"], wikihow_instance["Target_Line"])
+        #target_row["TTR_base_exp"] = type_token_ratio(target_context_base)
 
         target_row["ID"] = index_for_target
         collection.append(source_row)
@@ -82,10 +131,10 @@ def main():
     train_set, dev_set, test_set = read_data()
 
     # process test set
-    process_dict(test_set, "test_set_pytorch.json")
+    process_dict(test_set, "test_set_pytorch_left_context.json")
 
-    process_dict(dev_set, "dev_set_pytorch.json")
-    process_dict(train_set, "train_set_pytorch.json")
+    process_dict(dev_set, "dev_set_pytorch_left_context.json")
+    process_dict(train_set, "train_set_pytorch_left_context.json")
 
 
 main()
