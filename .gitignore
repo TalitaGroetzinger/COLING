@@ -31,7 +31,5 @@ classification-scripts/train_dict.pickle
 get-context/list_of_filenames/dev_files_kopie.txt
 get-context/list_of_filenames/test_files_kopie.txt
 get-context/output.txt
-pytorch-models/dev_set_pytorch.json
-pytorch-models/test_set_pytorch.json
-pytorch-models/train_set_pytorch.json
+pytorch-models/*.json
 results
