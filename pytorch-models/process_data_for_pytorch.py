@@ -3,7 +3,8 @@ import pandas as pd
 from progress.bar import Bar
 from nltk.tokenize import word_tokenize
 from features_for_pytorch import type_token_ratio, check_discourse_matches
-from similarity import *
+from similarity import compute_sentence_similarity
+import nltk
 
 
 def process_context(context, current_line):
@@ -28,10 +29,16 @@ def process_context_sim(context):
     left_context = context['left']
 
     if type(context['left']) == str:
-        # return the last element of the left context
-        return nltk.sent_tokenize(context['left'])[-1]
+        try:
+            return nltk.sent_tokenize(context['left'])[-1]
+        except IndexError:
+            return "UNK"
+
     else:
-        return left_context[-1]  # return the last sentence
+        try:
+            return left_context[-1]  # return the last sentence
+        except IndexError:
+            return "UNK"
 
 
 def read_data():
@@ -80,10 +87,11 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
             source_context)['score']
 
         # get cosine similarity for source
+        last_sent = process_context_sim(wikihow_instance["Source_Context_5"])
         source_row["Cos_sim"] = compute_sentence_similarity(
-            wikihow_instance["Source_Line"], process_context_sim(wikihow_instance["Source_Context"]))
+            wikihow_instance["Source_Line"], last_sent)
         source_row["Cos_sim_base"] = compute_sentence_similarity(
-            wikihow_instance["Source_Line"], process_context_sim(wikihow_instance["Source_Context"]))
+            wikihow_instance["Source_Line"], last_sent)
 
         # add type token ratio for source context in base-context-everywhere experiment (is the same)
         source_row["TTR_base_exp"] = type_token_ratio(source_context)
@@ -107,15 +115,16 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
             wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
 
         # get cosine similarity for source
-        source_row["Cos_sim"] = compute_sentence_similarity(
-            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Target_Line"]))
-        source_row["Cos_sim_base"] = compute_sentence_similarity(
-            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Source_Context"]))
+        target_row["Cos_sim"] = compute_sentence_similarity(
+            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Target_Context_5"]))
 
+        target_row["Cos_sim_base"] = compute_sentence_similarity(
+            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Source_Context_5"]))
         # add type token ratio for the target_context
         # target_context = process_context(
         #    wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
-        # target_row["TTR"] = type_token_ratio(target_context)
+
+        target_row["TTR"] = type_token_ratio(target_context)
 
         # add type token ratio for base context everywhere set-up
         target_context_base = process_context(
@@ -139,10 +148,10 @@ def main():
     train_set, dev_set, test_set = read_data()
 
     # process test set
-    process_dict(test_set, "test_set_pytorch_discourse.json")
+    process_dict(test_set, "test_set_pytorch_discourse_sim.json")
 
-    process_dict(dev_set, "dev_set_pytorch_discourse.json")
-    process_dict(train_set, "train_set_pytorch_discourse.json")
+    #process_dict(dev_set, "dev_set_pytorch_discourse_sim.json")
+    #process_dict(train_set, "train_set_pytorch_discourse_sim.json")
 
 
 main()
