@@ -1,9 +1,11 @@
 import torchtext.vocab
 from nltk.tokenize import word_tokenize
 import torch
+import nltk
+from nltk.corpus import stopwords
+list_of_stopwords = set(stopwords.words('english'))
 
 glove = torchtext.vocab.GloVe(name='6B', dim=100)
-print("succes")
 
 
 def compute_sim(word1, word2):
@@ -15,10 +17,10 @@ def compute_sim(word1, word2):
 
 
 def get_vector(embeddings, word):
-    if word in embeddings.stoi:
+    if word in embeddings.stoi and if word.lower() not in list_of_stopwords:
         return embeddings.vectors[embeddings.stoi[word]]
     else:
-        return torch.zeros(100)
+        return torch.ones(100)
 
 
 def compute_sentence_vec(sent):
@@ -28,8 +30,9 @@ def compute_sentence_vec(sent):
 
     """
     sentence_emb = []
-    for word in word_tokenize(sent.lower()):
-        embedding = get_vector(glove, word)
+
+    for word in word_tokenize(sent):
+        embedding = get_vector(glove, word.lower())
         sentence_emb.append(embedding)
 
     stacked_tensor = torch.stack(sentence_emb)
