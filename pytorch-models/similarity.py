@@ -17,7 +17,7 @@ def compute_sim(word1, word2):
 
 
 def get_vector(embeddings, word):
-    if word in embeddings.stoi and if word.lower() not in list_of_stopwords:
+    if word in embeddings.stoi and word.lower() not in list_of_stopwords:
         return embeddings.vectors[embeddings.stoi[word]]
     else:
         return torch.ones(100)
