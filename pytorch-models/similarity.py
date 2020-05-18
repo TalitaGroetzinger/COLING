@@ -13,7 +13,10 @@ def compute_sim(word1, word2):
     word1 = word1.unsqueeze(1)
     word2 = word2.unsqueeze(1)
     output = cos(word1, word2)
-    return output
+    if output is not None:
+        return output
+    else:
+        return 0.0
 
 
 def get_vector(embeddings, word):

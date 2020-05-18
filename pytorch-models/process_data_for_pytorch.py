@@ -115,14 +115,15 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
             wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
 
         # get cosine similarity for source
+
         target_row["Cos_sim"] = compute_sentence_similarity(
             wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Target_Context_5"]))
 
         target_row["Cos_sim_base"] = compute_sentence_similarity(
             wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Source_Context_5"]))
         # add type token ratio for the target_context
-        # target_context = process_context(
-        #    wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
+        target_context = process_context(
+            wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
 
         target_row["TTR"] = type_token_ratio(target_context)
 
@@ -148,10 +149,10 @@ def main():
     train_set, dev_set, test_set = read_data()
 
     # process test set
-    process_dict(test_set, "test_set_pytorch_discourse_sim.json")
+    #process_dict(test_set, "test_set_pytorch_discourse_sim.json")
 
-    #process_dict(dev_set, "dev_set_pytorch_discourse_sim.json")
-    #process_dict(train_set, "train_set_pytorch_discourse_sim.json")
+    process_dict(dev_set, "dev_set_pytorch_discourse_sim.json")
+    process_dict(train_set, "train_set_pytorch_discourse_sim.json")
 
 
 main()

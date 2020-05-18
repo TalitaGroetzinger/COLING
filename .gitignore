@@ -32,4 +32,5 @@ get-context/list_of_filenames/dev_files_kopie.txt
 get-context/list_of_filenames/test_files_kopie.txt
 get-context/output.txt
 pytorch-models/*.json
+pytorch-models/.*
 results
