@@ -1,6 +1,7 @@
 import json
 from progress.bar import Bar
 import pandas as pd
+from features_for_pytorch import type_token_ratio
 
 
 def process_context(context, current_line):
@@ -68,7 +69,13 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         source_row["Noun_mod"] = get_matches(wikihow_instance["PPDB_Matches"])
         source_row["ID"] = index_for_source
         source_row["Context"] = process_context(
-            wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
+            wikihow_instance["Source_Context_5"], wikihow_instance["Source_Line"])
+
+        # get type token ratio
+        source_context = process_context(
+            wikihow_instance["Source_Context_5"], wikihow_instance["Source_Line"])
+        source_row["TTR"] = type_token_ratio(source_context)
+        source_row["TTR_Base"] = type_token_ratio(source_context)
 
         target_row["Line"] = wikihow_instance["Target_Line"]
         target_row["Label"] = "1"
@@ -76,6 +83,16 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
             wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
         target_row["Noun_mod"] = get_matches(
             wikihow_instance["PPDB_Matches"], source=False)
+
+        target_context = process_context(
+            wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
+
+        target_context_base = process_context(
+            wikihow_instance["Source_Context_5"], wikihow_instance["Target_Line"])
+
+        # get type token_ratio
+        target_row["TTR"] = type_token_ratio(target_context)
+        target_row["TTR_Base"] = type_token_ratio(target_context_base)
 
         target_row["ID"] = index_for_target
         collection.append(source_row)
@@ -93,8 +110,8 @@ def main():
     train_set, dev_set, test_set = read_data()
 
     #process_dict(dev_set, "dev_set_cond_lstm.json")
-    #process_dict(test_set, "test_set_cond_lstm.json")
-    process_dict(train_set, "train_set_cond_lstm.json")
+    process_dict(test_set, "test_set_cond_lstm.json")
+    #process_dict(train_set, "train_set_cond_lstm.json")
 
     # process test set
     # process_dict(test_set, "test_set_pytorch_discourse_sim.json")
