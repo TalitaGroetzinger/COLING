@@ -109,9 +109,9 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
 def main():
     train_set, dev_set, test_set = read_data()
 
-    #process_dict(dev_set, "dev_set_cond_lstm.json")
-    process_dict(test_set, "test_set_cond_lstm.json")
-    #process_dict(train_set, "train_set_cond_lstm.json")
+    process_dict(dev_set, "dev_set_cond_lstm.json")
+    #process_dict(test_set, "test_set_cond_lstm.json")
+    process_dict(train_set, "train_set_cond_lstm.json")
 
     # process test set
     # process_dict(test_set, "test_set_pytorch_discourse_sim.json")
