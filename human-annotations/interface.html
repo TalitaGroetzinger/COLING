@@ -1,0 +1,295 @@
+<!-- You must include this JavaScript file -->
+<script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+
+<!--- own javascript file for survey flow -->
+<script LANGUAGE="JavaScript">
+  function toggleQuestionForm(element) {
+    const { value } = element;
+
+    const noQuestionExplanation = document.getElementById('no-question-explanation');
+    const questionContainer = document.getElementById('question-container');
+
+    noQuestionExplanation.disabled = (value == 'true');
+    questionContainer.disabled = (value != 'true');
+  }
+
+
+  function toggleShowTextArea() {
+    const checkedRadioButton = document.querySelector("input[name=explanation]:checked");
+    const textArea = document.getElementById("explanation-other-value");
+
+    textArea.disabled = !(checkedRadioButton.value == "other");
+  }
+
+  function displayMoreInfo(infoContainerId) {
+    var infoContainer = document.getElementById(infoContainerId);
+    infoContainer.style.display = infoContainer.style.display == "block" ? "none" : "block";
+  }
+
+
+</script>
+<!--- own javascript file for survey flow -->
+
+<style>
+  table {
+    border-collapse: collapse;
+  }
+
+
+
+  table,
+  th,
+  td {
+    border: 1px solid black;
+    padding: 6px;
+  }
+
+  caption {
+    font-size: 10pt;
+  }
+
+  .tab {
+    margin-left: 40px;
+  }
+
+  .tab-text {
+    margin-left: 40px;
+    border-style: solid;
+    border-color: #4eb5f1;
+
+  }
+
+  }
+
+  .question-choice {
+    font-size: 14pt;
+  }
+
+  label:hover {
+    cursor: pointer;
+  }
+
+  #additional-info {
+    font-size: 10pt;
+    color: grey;
+
+  }
+
+
+  #question-container {
+    margin-bottom: 30px;
+  }
+
+  #question-container,
+  #no-question-explanation {
+    margin-left: 25px;
+  }
+
+  #no-question-explanation {
+    border-style: none;
+    padding: 0;
+  }
+
+  #no-question-explanation label {
+    display: block;
+    margin-top: 10px;
+  }
+
+  #no-question-explanation input {
+    display: inline-block;
+    margin-right: 10px;
+  }
+
+  #no-question-explanation textarea {
+    width: 60%;
+    height: 150px;
+    margin: 5px;
+    font-size: 12pt;
+  }
+
+  #step-1-text,
+  #step-1-list {
+    font-size: 14pt;
+  }
+
+  #no-question-explanation textarea:disabled {
+    background-color: #ccc;
+  }
+
+  #no-question-explanation:disabled label {
+    color: #ccc;
+  }
+
+  #info-container-1,
+  #info-container-2,
+  #changes {
+    display: none;
+    font-size: 10pt;
+    color: grey;
+  }
+
+
+  .button3 {
+    display: inline-block;
+    padding: 0.3em 1.2em;
+    margin: 0 0.3em 0.3em 0;
+    border-radius: 2em;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-size: 10pt;
+    font-weight: 300;
+    color: #FFFFFF;
+    background-color: #4eb5f1;
+    text-align: center;
+    transition: all 0.2s;
+    width: 100px;
+    height: 30px;
+  }
+
+  a.button3:hover {
+    background-color: #4095c6;
+  }
+
+  @media all and (max-width:30em) {
+    button3 {
+      display: block;
+      margin: 0.2em auto;
+
+    }
+  }
+
+  .button4 {
+    display: inline-block;
+    padding: 0.3em 1.2em;
+    margin: 0 0.3em 0.3em 0;
+    border-radius: 2em;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-size: 10pt;
+    font-weight: 300;
+    color: #FFFFFF;
+    background-color: #faa732;
+    text-align: center;
+    transition: all 0.2s;
+    width: 150px;
+    height: 30px;
+  }
+
+
+
+  }
+
+  a.button4:hover {
+    background-color: #4095c6;
+  }
+
+  @media all and (max-width:30em) {
+    button4 {
+      display: block;
+      margin: 0.2em auto;
+
+    }
+  }
+
+  #show-changes-referent {
+    color;
+    faa732;
+  }
+</style>
+
+</head>
+
+
+
+<!-- For the full list of available Crowd HTML Elements and their input/output documentation,
+      please refer to https://docs.aws.amazon.com/sagemaker/latest/dg/sms-ui-template-reference.html -->
+
+<!-- You must include crowd-form so that your task submits answers to MTurk -->
+<crowd-form answer-format="flatten-objects">
+  <classification-target>
+    <h1> Short Instructions </h1>
+    <p> Sentence A and B come from different versions of the text ${Title}. Your task is to determine
+      which sentence belongs to the old version of the text and which one belongs to the old version </p>.
+    <!---- TASK STARTS HERE  -->
+    <!---- START TEXT 1 -->
+    <div>
+      <h1> Task <h1>
+          <h3> Sentence 1 </h3>
+          <p>
+
+            <!-- The first item's title will be substituted for the "item1_title" variable below 
+                          when you publish a batch with a CSV input file containing multiple item comparisons -->
+            ${Line1}
+          </p>
+
+    </div>
+    <div>
+      <button class='button3' type='button' onclick="displayMoreInfo('info-container-1')" id='more-info-button'>
+        context </button>
+      <p id='info-container-1'> ${Context1}</p>
+    </div>
+    <!---- END TEXT 1 -->
+
+    <hr />
+
+    <!---- END TEXT 1 -->
+    <div>
+      <h3>Text B</h3>
+      <p>
+        ${Line2}
+      </p>
+    </div>
+    <button class='button3' type='button' onclick="displayMoreInfo('info-container-2')" id='more-info-button'>context
+    </button>
+    <p id='info-container-2'> ${Context2} </p>
+  </classification-target>
+
+  <!-- Use the short-instructions section for quick instructions that the Worker
+            will see while working on the task. Including some basic examples of 
+            good and bad answers here can help get good results. You can include 
+            any HTML here. -->
+  <!-- <short-instructions>
+          
+      </short-instructions> -->
+
+  <br />
+  <hr />
+
+  <!----------- TASK DESCRIPTION BEGINS HERE -->
+
+  <div class='steps-to-complete'>
+    <h2> Task </h2>
+    <!---------------------------- BEGIN FORM ------------------------------>
+
+    <form method="post" enctype="text/plain">
+      <p> Does Sentence A belong to the base or the revised version of the text?</p>
+      <label class="question-choice">
+
+        <fieldset id='no-question-explanation'>
+          <label><input type="radio" name="explanation" value="base"> Base </label>
+          <label><input type="radio" name="explanation" value="not-sure"> Don't know </label>
+          <label><input type="radio" name="explanation" value="revised"> Revised</label>
+        </fieldset>
+    </form>
+    <!---------------------------- END FORM ------------------------------>
+  </div>
+  </div>
+  <!----------- TASK DESCRIPTION ENDS HERE -->
+
+
+
+
+  <!------- FULL INSTRUCTIONS START HERE -->
+  <!-- Use the full-instructions section for more detailed instructions that the 
+            Worker can open while working on the task. Including more detailed 
+            instructions and additional examples of good and bad answers here can
+            help get good results. You can include any HTML here. -->
+  <full-instructions header="Full instructions">
+    Add later if necessary.
+  </full-instructions>
+  <!------- FULL INSTRUCTIONS START HERE -->
+
+
+  </crowd-classifier>
+  </crowd-classifier>
+</crowd-form>
