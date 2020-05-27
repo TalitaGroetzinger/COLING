@@ -9,7 +9,7 @@ def make_bold(x):
 
 def format_title(title):
     title = title.replace("_", " ").strip('.txt')
-    return "How to {0}".format(title)
+    return "<i> How to {0} </i>".format(title)
 
 
 def process_context(context, current_line):

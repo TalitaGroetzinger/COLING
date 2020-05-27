@@ -208,8 +208,17 @@
 <crowd-form answer-format="flatten-objects">
   <classification-target>
     <h1> Short Instructions </h1>
-    <p> Sentence A and B come from different versions of the text ${Title}. Your task is to determine
-      which sentence belongs to the old version of the text and which one belongs to the old version </p>.
+    <ul>
+      <li> Sentence A and B come from different versions of the text <i> ${Title} </i> </li>
+      <li> One sentence belongs to the first version of the text and the other to the newer version.</li>
+      <li> Your task is to determine which sentence is better: Sentence A or Sentence B. </li>
+      <li> Keep in mind that:
+        <ul>
+          <li> Each sentence can be either from the old or newer version of the text (not both). </li>
+          <li> If Sentence A belongs to the first version of the text, it means that Sentence B belongs to the
+            newer version of the text (and vice versa). </li>
+        </ul>
+    </ul>
     <!---- TASK STARTS HERE  -->
     <!---- START TEXT 1 -->
     <div>
@@ -262,13 +271,13 @@
     <!---------------------------- BEGIN FORM ------------------------------>
 
     <form method="post" enctype="text/plain">
-      <p> Does Sentence A belong to the base or the revised version of the text?</p>
+      <p> Which sentence is better? </p>
       <label class="question-choice">
 
         <fieldset id='no-question-explanation'>
-          <label><input type="radio" name="explanation" value="base"> Base </label>
-          <label><input type="radio" name="explanation" value="not-sure"> Don't know </label>
-          <label><input type="radio" name="explanation" value="revised"> Revised</label>
+          <label><input type="radio" name="annotation-answer" value="answer-base"> Sentence A </label>
+          <label><input type="radio" name="annotation-answer" value="answer-not-sure"> Equally Good </label>
+          <label><input type="radio" name="annotation-answer" value="answer-revised"> Sentence B </label>
         </fieldset>
     </form>
     <!---------------------------- END FORM ------------------------------>
