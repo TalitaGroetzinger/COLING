@@ -210,14 +210,15 @@
     <h1> Short Instructions </h1>
     <ul>
       <li> Sentence A and B come from different versions of the text <i> ${Title} </i> </li>
-      <li> One sentence belongs to the first version of the text and the other to the newer version.</li>
-      <li> Your task is to determine which sentence is better: Sentence A or Sentence B. </li>
+      <li> One sentence belongs to the first version and the other to the newer text.</li>
+      <li> Your task is to determine if one sentence (A or B) is better than the other OR if they are equally good.
+      </li>
     </ul>
     <!---- TASK STARTS HERE  -->
     <!---- START TEXT 1 -->
     <div>
       <h1> Task <h1>
-          <h3> Sentence 1 </h3>
+          <h3> Sentence A </h3>
           <p>
 
             <!-- The first item's title will be substituted for the "item1_title" variable below 
@@ -231,20 +232,26 @@
         context </button>
       <p id='info-container-1'> ${Context1}</p>
     </div>
+
     <!---- END TEXT 1 -->
 
     <hr />
 
     <!---- END TEXT 1 -->
     <div>
-      <h3>Text B</h3>
+      <h3>Sentence B</h3>
       <p>
         ${Line2}
       </p>
     </div>
+    <button class='button4' type='button' onclick="displayMoreInfo('changes')">show changes</button>
     <button class='button3' type='button' onclick="displayMoreInfo('info-container-2')" id='more-info-button'>context
     </button>
     <p id='info-container-2'> ${Context2} </p>
+    <p id='changes'>
+      ${Differences} </p>
+
+
   </classification-target>
 
   <!-- Use the short-instructions section for quick instructions that the Worker
