@@ -21,7 +21,7 @@ def get_differences(matches, source_first=True):
     if source_first == True:
         # show in source-revise sequence
         for c in range(len(source_matches)):
-            output = "{0} -> {1}".format(source_matches[c], target_matches[c])
+            output = "{0} <-> {1}".format(source_matches[c], target_matches[c])
             if differences != []:
                 differences.append(", {0}".format(output))
             else:
@@ -29,7 +29,7 @@ def get_differences(matches, source_first=True):
     else:
         # show in source-revise sequence
         for c in range(len(source_matches)):
-            output = "{1} -> {0}".format(source_matches[c], target_matches[c])
+            output = "{1} <-> {0}".format(source_matches[c], target_matches[c])
             if differences != []:
                 differences.append(", {0}".format(output))
             else:
