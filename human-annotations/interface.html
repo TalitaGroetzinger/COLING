@@ -183,6 +183,10 @@
     background-color: #4095c6;
   }
 
+  #textbox {
+    width: 200px;
+  }
+
   @media all and (max-width:30em) {
     button4 {
       display: block;
@@ -210,7 +214,6 @@
     <h1> Short Instructions </h1>
     <ul>
       <li> Sentence A and B come from different versions of the text <i> ${Title} </i> </li>
-      <li> One sentence belongs to the first version and the other to the newer text.</li>
       <li> Your task is to determine if one sentence (A or B) is better than the other OR if they are equally good.
       </li>
     </ul>
@@ -272,7 +275,7 @@
     <!---------------------------- BEGIN FORM ------------------------------>
 
     <form method="post" enctype="text/plain">
-      <p> Which sentence is better? </p>
+      <p> <b> 1) Which sentence is better? </b> </p>
       <label class="question-choice">
 
         <fieldset id='no-question-explanation'>
@@ -280,6 +283,11 @@
           <label><input type="radio" name="annotation-answer" value="answer-not-sure"> Equally Good </label>
           <label><input type="radio" name="annotation-answer" value="answer-revised"> Sentence B </label>
         </fieldset>
+    </form>
+
+    <form method="post" enctype="text/plain">
+      <p> <b> 2) Additional Comments </b> </p>
+      <label><input type='text' name="annotation-comments" id="textbox"> </label>
     </form>
     <!---------------------------- END FORM ------------------------------>
   </div>
@@ -295,7 +303,6 @@
             instructions and additional examples of good and bad answers here can
             help get good results. You can include any HTML here. -->
   <full-instructions header="Full instructions">
-    Add later if necessary.
   </full-instructions>
   <!------- FULL INSTRUCTIONS START HERE -->
 
