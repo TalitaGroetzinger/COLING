@@ -91,6 +91,8 @@ def read_data(return_dev=True):
       Function to read the dataset
     """
     path_to_dir = '../classification-scripts/noun-modifications'
+    path_to_dev = '{0}/noun-modifications-dev-v2-new.json'.format(
+        path_to_dir)
     if return_dev:
         print("read development set only")
         path_to_dev = '{0}/noun-modifications-dev-v2-new.json'.format(
@@ -105,15 +107,15 @@ def read_data(return_dev=True):
         path_to_train = '{0}/noun-modifications-train-v2-new.json'.format(
             path_to_dir)
 
-    with open(path_to_test, 'r') as json_in_test:
-        test = json.load(json_in_test)
+        with open(path_to_test, 'r') as json_in_test:
+            test = json.load(json_in_test)
 
-    with open(path_to_train, 'r') as json_in_train:
-        train = json.load(json_in_train)
+        with open(path_to_train, 'r') as json_in_train:
+            train = json.load(json_in_train)
 
-    with open(path_to_dev, 'r') as json_in_dev:
-        dev = json.load(json_in_dev)
-    return train, dev, test
+        with open(path_to_dev, 'r') as json_in_dev:
+            dev = json.load(json_in_dev)
+        return train[0:1000]
 
 
 def randomize_source_base(base_line, revised_line, base_line_in_base_context, revised_line_in_base_context, differences, index):
@@ -176,11 +178,12 @@ def process_dict(list_of_wikihow_instances, sample_size=500):
     df = pd.DataFrame(collection)
     subset = df.sample(n=len(df), random_state=1).head(500)
     print(subset)
-    subset.to_csv('annotation-subset.csv', index=False)
+    subset.to_csv('annotation-subset-train.csv', index=False)
 
 
 def main():
-    dev = read_data()
+    dev = read_data(return_dev=False)
+    print(len(dev))
     process_dict(dev)
 
 
