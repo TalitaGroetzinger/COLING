@@ -114,17 +114,25 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         source_row["TTR"] = type_token_ratio(source_context)
         source_row["Discourse_count"] = check_discourse_matches(source_context)[
             'score']
-        last_sent = process_context_sim(wikihow_instance["Source_Context_5"])
+        last_sent_left = process_context_sim(
+            wikihow_instance["Source_Context_5"], left_side=True)
+        last_sent_right = process_context_sim(
+            wikihow_instance["Source_Context_5"], left_side=False)
 
-        source_row["Cos_sim"] = compute_sentence_similarity(
-            wikihow_instance["Source_Line"], last_sent)
+        source_row["Cos_sim_left"] = compute_sentence_similarity(
+            wikihow_instance["Source_Line"], last_sent_left)
+        source_row["Cos_sim_right"] = compute_sentence_similarity(
+            wikihow_instance["Source_Line"], last_sent_right)
+
         source_row["Length"] = add_length(source_context)
 
         # repeat for base context everywhere
 
         source_row["Length_base_exp"] = add_length(source_context)
-        source_row["Cos_sim_base_exp"] = compute_sentence_similarity(
-            wikihow_instance["Source_Line"], last_sent)
+        source_row["Cos_sim_left_base_exp"] = compute_sentence_similarity(
+            wikihow_instance["Source_Line"], last_sent_left)
+        source_row["Cos_sim_right_base_exp"] = compute_sentence_similarity(
+            wikihow_instance["Source_Line"], last_sent_right)
 
         source_row["TTR_base_exp"] = type_token_ratio(source_context)
         source_row["Discourse_count_base_exp"] = check_discourse_matches(
@@ -150,8 +158,10 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         target_row["Length"] = add_length(target_context)
         target_row["Discourse_count"] = check_discourse_matches(target_context)[
             'score']
-        target_row["Cos_sim"] = compute_sentence_similarity(
-            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Target_Context_5"]))
+        target_row["Cos_sim_left"] = compute_sentence_similarity(
+            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Target_Context_5"], left_side=True))
+        target_row["Cos_sim_right"] = compute_sentence_similarity(
+            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Target_Context_5"], left_side=False))
 
         target_context = process_context(
             wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
@@ -165,8 +175,10 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         target_row["Length_base_exp"] = add_length(target_context_base)
         target_row["Discourse_count_base_exp"] = check_discourse_matches(process_context(
             wikihow_instance["Source_Context_5"], wikihow_instance["Target_Line"]))['score']
-        target_row["Cos_sim_base_exp"] = compute_sentence_similarity(
-            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Source_Context_5"]))
+        target_row["Cos_sim_left_base_exp"] = compute_sentence_similarity(
+            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Source_Context_5"], left_side=True))
+        target_row["Cos_sim_right_base_exp"] = compute_sentence_similarity(
+            wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Source_Context_5"], left_side=False))
 
         target_row["ID"] = index_for_target
         collection.append(source_row)
@@ -185,11 +197,13 @@ def main():
     train_set, dev_set, test_set = read_data()
 
     # process test set
-    process_dict(test_set[0:10],
+    process_dict(test_set,
                  "test_set_pytorch_discourse_sim_ttr_length_right_sim.json")
 
-    #process_dict(dev_set, "dev_set_pytorch_discourse_sim_ttr_length.json")
-    #process_dict(train_set, "train_set_pytorch_discourse_sim_ttr_length.json")
+    process_dict(
+        dev_set, "dev_set_pytorch_discourse_sim_ttr_length_right_sim.json")
+    process_dict(
+        train_set, "train_set_pytorch_discourse_sim_ttr_length_right_sim.json")
 
 
 main()
