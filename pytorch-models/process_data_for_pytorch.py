@@ -36,20 +36,36 @@ def process_context(context, current_line):
     return context
 
 
-def process_context_sim(context):
-    left_context = context['left']
+def process_context_sim(context, side="left"):
 
-    if type(context['left']) == str:
-        try:
-            return nltk.sent_tokenize(context['left'])[-1]
-        except IndexError:
-            return "UNK"
+    if side = "left":
+        left_context = context['left']
+        left_context = context['left']
+        if type(context['left']) == str:
+            try:
+                return nltk.sent_tokenize(context['left'])[-1]
+            except IndexError:
+                return "UNK"
 
+        else:
+            try:
+                return left_context[-1]  # return the last sentence
+            except IndexError:
+                return "UNK"
     else:
-        try:
-            return left_context[-1]  # return the last sentence
-        except IndexError:
-            return "UNK"
+        right_context = context['right']
+        right_context = context['right']
+        if type(context['right']) == str:
+            try:
+                return nltk.sent_tokenize(context['left'])[-1]
+            except IndexError:
+                return "UNK"
+
+        else:
+            try:
+                return right_context[-1]  # return the last sentence
+            except IndexError:
+                return "UNK"
 
 
 def read_data():
@@ -99,6 +115,7 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         source_row["Discourse_count"] = check_discourse_matches(source_context)[
             'score']
         last_sent = process_context_sim(wikihow_instance["Source_Context_5"])
+
         source_row["Cos_sim"] = compute_sentence_similarity(
             wikihow_instance["Source_Line"], last_sent)
         source_row["Length"] = add_length(source_context)
@@ -108,6 +125,7 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
         source_row["Length_base_exp"] = add_length(source_context)
         source_row["Cos_sim_base_exp"] = compute_sentence_similarity(
             wikihow_instance["Source_Line"], last_sent)
+
         source_row["TTR_base_exp"] = type_token_ratio(source_context)
         source_row["Discourse_count_base_exp"] = check_discourse_matches(
             source_context)['score']
@@ -134,6 +152,7 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
             'score']
         target_row["Cos_sim"] = compute_sentence_similarity(
             wikihow_instance["Target_Line"], process_context_sim(wikihow_instance["Target_Context_5"]))
+
         target_context = process_context(
             wikihow_instance["Target_Context_5"], wikihow_instance["Target_Line"])
         target_row["TTR"] = type_token_ratio(target_context)
