@@ -36,9 +36,9 @@ def process_context(context, current_line):
     return context
 
 
-def process_context_sim(context, side="left"):
+def process_context_sim(context, left_side=False):
 
-    if side = "left":
+    if left_side:
         left_context = context['left']
         left_context = context['left']
         if type(context['left']) == str:
@@ -57,13 +57,13 @@ def process_context_sim(context, side="left"):
         right_context = context['right']
         if type(context['right']) == str:
             try:
-                return nltk.sent_tokenize(context['left'])[-1]
+                return nltk.sent_tokenize(context['right'])[0]
             except IndexError:
                 return "UNK"
 
         else:
             try:
-                return right_context[-1]  # return the last sentence
+                return right_context[0]  # return the last sentence
             except IndexError:
                 return "UNK"
 
@@ -186,7 +186,7 @@ def main():
 
     # process test set
     process_dict(test_set[0:10],
-                 "test_set_pytorch_discourse_sim_ttr_length.json")
+                 "test_set_pytorch_discourse_sim_ttr_length_right_sim.json")
 
     #process_dict(dev_set, "dev_set_pytorch_discourse_sim_ttr_length.json")
     #process_dict(train_set, "train_set_pytorch_discourse_sim_ttr_length.json")
