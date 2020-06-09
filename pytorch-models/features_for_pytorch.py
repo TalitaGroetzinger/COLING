@@ -1,5 +1,7 @@
 from nltk.tokenize import word_tokenize
 import pickle
+import nltk
+from collections import Counter
 
 path_to_markers = '../data/discourse_markers.pickle'
 with open(path_to_markers, 'rb') as pickle_in:
@@ -82,3 +84,49 @@ def check_discourse_matches(tokens):
                 unigram_matches += 1
                 total += 1
     return {"score": unigram_matches + bigram_matches + trigram_matches + fourgram_matches + fivegram_matches}
+
+
+def mark_cases(context, matches, source=True):
+    if source:
+        match = [elem[0][0].lower() for elem in matches]
+    else:
+        match = [elem[1][0].lower() for elem in matches]
+
+    tokenized_doc = word_tokenize(context)
+    document = [word[0] for word in nltk.pos_tag(tokenized_doc)]
+
+    final_rep = []
+    for word in document:
+        if word.lower() in match:
+            word = word + "__REV__"
+            final_rep.append(word)
+        else:
+            final_rep.append(word)
+    coherence_score = compute_coherence(final_rep)
+    return coherence_score
+
+
+def compute_coherence(doc):
+    """
+        Input: X formatted with __REV__
+    """
+
+    freq = Counter()
+    d = {}
+    for word in doc:
+        if '__REV__' in word:
+            freq[word.lower()] += 1
+    bow = dict(freq)
+    coherence_score = 0
+    for key, _ in bow.items():
+        if bow[key] > 1:
+            coherence_score += 1
+        else:
+            coherence_score += 0
+    try:
+        score = coherence_score / len(bow)
+    except ZeroDivisionError:
+        score = 0
+    return score
+    #d["score"] = score
+    # return d

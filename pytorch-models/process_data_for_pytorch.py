@@ -200,7 +200,7 @@ def process_dict(list_of_wikihow_instances, json_to_write_filename):
 
         # source = false want je gebruikt de target_line
         target_row["Noun_overlap_base_exp"] = mark_cases(
-            target_context, wikihow_instance["PPDB_Matches"], source=False)
+            target_context_base, wikihow_instance["PPDB_Matches"], source=False)
 
         target_row["ID"] = index_for_target
         collection.append(source_row)
@@ -220,12 +220,12 @@ def main():
 
     # process test set
     process_dict(test_set,
-                 "test_set_pytorch_discourse_sim_ttr_length_right_sim_test.json")
+                 "test_set_pytorch_discourse_sim_ttr_length_right_sim_noun_overlap_new.json")
 
     process_dict(
-        dev_set, "dev_set_pytorch_discourse_sim_ttr_length_right_sim.json")
+        dev_set, "dev_set_pytorch_discourse_sim_ttr_length_right_sim_new.json")
     process_dict(
-        train_set, "train_set_pytorch_discourse_sim_ttr_length_right_sim.json")
+        train_set, "train_set_pytorch_discourse_sim_ttr_length_right_sim_new.json")
 
 
 if __name__ == "__main__":
