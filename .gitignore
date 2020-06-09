@@ -34,3 +34,9 @@ get-context/output.txt
 pytorch-models/*.json
 pytorch-models/.*
 results
+*.tsv
+*.csv
+*.txt
+*.json
+*.pickle
+
