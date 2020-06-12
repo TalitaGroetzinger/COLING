@@ -81,6 +81,7 @@ def get_list_of_relations(df):
 
 def main():
     df = pd.read_csv('./alok_results/alok_results_new.tsv', sep='\t')
+    #df = pd.read_csv('./aliki/aliki_results.tsv', sep='\t')
     # df['Answer.answer-b'] = df['Answer.answer-b'].replace(['TRUE ', 'TRUE'])
     print(df.columns)
 
